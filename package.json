@@ -15,5 +15,12 @@
   "bugs": {
     "url": "https://github.com/AbsolutelyMax/discord_godbot/issues"
   },
-  "homepage": "https://github.com/AbsolutelyMax/discord_godbot#readme"
+  "homepage": "https://github.com/AbsolutelyMax/discord_godbot#readme",
+  "dependencies": {
+    "bower": "^1.8.0",
+    "bufferutil": "^3.0.1",
+    "discord.js": "^11.1.0",
+    "express": "^4.15.3",
+    "uws": "^8.14.0"
+  }
 }
