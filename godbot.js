@@ -1,14 +1,30 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
+const config = require("./config.json");
+const fs = require("fs");
 
 client.on("ready", () => {
   console.log("god bot is present");
 });
 
 client.on("message", msg => {
-	if (msg.content.startsWith("africa")) {
+	let prefix = config.prefix;
+
+    if (!msg.content.startsWith(prefix) || msg.author.bot) return;
+    //message.author.id !== config.ownerID
+    
+    if (msg.content.startsWith(prefix + "help")) {
+		msg.channel.send("COMMANDS: africa");
+	} else
+
+    if (msg.content.startsWith(prefix + "africa")) {
 		msg.channel.send("https://www.youtube.com/watch?v=FTQbiNvZqaY");
-	}
+	} 
+
 });
 
-client.login("MzI2MDc0OTcwNTg3MjY3MTAz.DChhTg.2zeJf9PqvpGOLGVYwSRnI8JtgrE");
+ask = function() {
+
+}
+
+client.login(config.token);
