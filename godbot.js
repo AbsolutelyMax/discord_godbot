@@ -38,18 +38,25 @@ function getEmojiFromString(emojiname)
   return "";
 }
 
+rollTheDice = function(dice) {
+    let final = 0;
+    for(var i = 0; i < dice; i++) {
+        final += randomValue(1, 6);
+    }
+    return final;
+}
+
 client.on("ready", () => {
   client.voiceConnections
   commands["africa"] = function(msg, str) { 
     console.log(str);
     casting.cast(Discord.Message, msg).channel.send("https://www.youtube.com/watch?v=FTQbiNvZqaY");
   };
-  
   /*
   commands[getEmojiFromString("therose")] = function(msg) {
-    casting.cast(Discord.Message, msg).channel.send("bruh !!");
-  }*/
-
+    casting.cast(Discord.Message, msg).channel.send("nice emoji dude");
+  }
+  */
   commands["8ball"] = function(msg, str) {
     let ans = "";
     let postMsg = msg.content.slice(7);
@@ -57,7 +64,21 @@ client.on("ready", () => {
     casting.cast(Discord.Message, msg).channel.send(ans);
   };
 
-  commands["ytplay"] = function(oldmsg, str)
+  commands["flip"] = function(msg, str) {
+    var coin = (Math.floor(Math.random() * 2) == 0) ? 'heads' : 'tails';
+    console.log(coin);
+    let result = coin.toString();
+    casting.cast(Discord.Message, msg).channel.send(result);
+  }
+
+  commands["roll"] = function(msg, str) {
+    let sum = rollTheDice(parseInt(str));
+    console.log(sum);
+    let result = sum.toString();
+    casting.cast(Discord.Message, msg).channel.send(result);
+  }
+
+  commands["play"] = function(oldmsg, str)
   {
     var msg = casting.cast(Discord.Message, oldmsg);
     if (msg.member.voiceChannel == null) return;
