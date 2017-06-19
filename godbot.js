@@ -89,8 +89,7 @@ client.on("ready", () => {
     }).catch(console.error);
   }
 
-
-  commands["ytstop"] = function(oldmsg, str) 
+  commands["stop"] = function(oldmsg, str) 
   {
     var msg = casting.cast(Discord.Message, msg);
     client.voiceConnections.first().st
