@@ -5,14 +5,27 @@ const config = require("./config.json");
 const yt = require('ytdl-core');
 const fs = require("fs");
 var commands = [];
-
-var currentStream;
 var queue = [];
+var curstream;
 
 function getCommands() { return commands; }
 
+function playNext()
+{
+  if (queue.length == 0) return;
+  playAudio(queue[0], client.voiceConnections.first());
+  queue.shift();
+}
+
+function playAudio(str, connection)
+{
+  curstream = yt(str, {filter: "audioonly"});
+  curstream.addListener("end", playNext);
+  connection.playStream(curstream);
+}
+
 randomValue = function(min, max) {
-    return Math.floor(Math.random()*(max-min+1)+min);
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 eightBall = function(arg) {
@@ -84,15 +97,20 @@ client.on("ready", () => {
     if (msg.member.voiceChannel == null) return;
     msg.member.voiceChannel.join().then(connection => 
     {
-      const stream = yt(str, {filter: "audioonly"});
-      connection.playStream(stream);
+      if (queue.length == 0 && ( curstream == null || !curstream.readable))
+      {
+        playAudio(str, connection);
+      }else 
+      {
+        queue.push(str);
+      }
     }).catch(console.error);
   }
 
   commands["stop"] = function(oldmsg, str) 
   {
     var msg = casting.cast(Discord.Message, msg);
-    client.voiceConnections.first().st
+    queue = [];
   }
 
   console.log("god bot is present");
