@@ -69,7 +69,7 @@ client.on("ready", () => {
   }
 
 
-  commands["stop"] = function(oldmsg, str) 
+  commands["ytstop"] = function(oldmsg, str) 
   {
     var msg = casting.cast(Discord.Message, msg);
     client.voiceConnections.first().st
