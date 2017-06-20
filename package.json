@@ -21,12 +21,15 @@
     "bufferutil": "^3.0.1",
     "discord.js": "^11.1.0",
     "express": "^4.15.3",
+    "ffmpeg-binaries": "^3.2.2-3",
     "fs": "0.0.1-security",
+    "mout": "^1.0.0",
+    "opusscript": "0.0.3",
     "typescript-collections": "^1.2.3",
     "uws": "^8.14.0",
     "ytdl-core": "^0.14.4"
   },
   "devDependencies": {
-    "@types/node": "^8.0.0"
+    "@types/node": "^8.0.1"
   }
 }

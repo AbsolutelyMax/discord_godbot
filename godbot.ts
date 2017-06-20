@@ -68,7 +68,6 @@ function rollTheDice(dice:number) {
 }
 
 client.on("ready", () => {
-  
   commands.setValue("africa", function(msg, str) { 
     console.log(str);
     msg.channel.send("https://www.youtube.com/watch?v=FTQbiNvZqaY");
@@ -87,14 +86,12 @@ client.on("ready", () => {
 
   commands.setValue("flip", function(msg, str) {
     var coin = (Math.floor(Math.random() * 2) == 0) ? 'heads' : 'tails';
-    console.log(coin);
     let result = coin.toString();
     msg.channel.send(result);
   });
 
   commands.setValue("roll", function(msg, str) {
     let sum = rollTheDice(parseInt(str));
-    console.log(sum);
     let result = sum.toString();
     msg.channel.send(result);
   });
@@ -104,7 +101,7 @@ client.on("ready", () => {
     if (msg.member.voiceChannel == null) return;
     msg.member.voiceChannel.join().then(connection => 
     {
-      if (queue.length == 0 && ( curstream == null || !curstream.readable))
+      if (queue.length == 0 && (curstream == null || !curstream.readable))
       {
         playAudio(str, connection);
       }else 
