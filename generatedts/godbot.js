@@ -10,15 +10,24 @@ const commands = new Collections.Dictionary();
 const queue = [];
 var curstream;
 function playNext() {
-    if (queue.length == 0)
+    if (queue.length == 0) {
+        client.voiceConnections.first().disconnect();
         return;
+    }
     playAudio(queue[0], client.voiceConnections.first());
     queue.shift();
 }
 function playAudio(str, connection) {
-    curstream = yt(str, { filter: "audioonly" });
-    curstream.addListener("end", playNext);
-    connection.playStream(curstream);
+    yt.getInfo(str, function (error, info) {
+        if (error) {
+            connection.channel.guild.defaultChannel.send("wtf is this link");
+            return;
+        }
+        connection.channel.guild.defaultChannel.send("Now playing **" + info.title + "**" + " by *" + info.author.name + "*");
+        curstream = yt(str, { filter: "audioonly" });
+        curstream.addListener("end", playNext);
+        connection.playStream(curstream);
+    });
 }
 function randomValue(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
@@ -88,20 +97,38 @@ client.on("ready", () => {
         msg.channel.send(result);
     });
     commands.setValue("play", function (msg, str) {
-        if (msg.member.voiceChannel == null)
+        if (msg.member.voiceChannel == null) {
+            msg.channel.send("get in a channel shithead");
             return;
+        }
         msg.member.voiceChannel.join().then(connection => {
             if (queue.length == 0 && (curstream == null || !curstream.readable)) {
                 playAudio(str, connection);
             }
             else {
-                queue.push(str);
+                yt.getInfo(str, function (error, info) {
+                    if (error)
+                        msg.channel.send("lmao video please");
+                    queue.push(str);
+                    msg.channel.send("Queued **" + info.title + "** by *" + info.author.name + "*");
+                });
             }
         }).catch(console.error);
     });
     commands.setValue("stop", function (msg, str) {
+        curstream.emit("end");
         queue.length = 0;
+        msg.channel.send("Stopped playback");
     });
+    commands.setValue("pause", function (msg, str) {
+        curstream.pause();
+        msg.channel.send("Paused playback");
+    });
+    commands.setValue("resume", function (msg, str) {
+        curstream.resume();
+        msg.channel.send("Resumed playback");
+    });
+    client.guilds.first().member(client.user).setDeaf(true);
     console.log("god bot is present");
 });
 client.on("message", msg => {
@@ -112,7 +139,7 @@ client.on("message", msg => {
     console.log(msg.content);
     commands.keys().forEach(function (command, index) {
         if (msg.content.startsWith(prefix + command))
-            commands.values()[index](msg, msg.content.substring(prefix.length + command.length + 1));
+            commands.values()[index](msg, msg.content.substring(prefix.length + command.length + 1).trim());
     });
 });
 client.login(config.token);
