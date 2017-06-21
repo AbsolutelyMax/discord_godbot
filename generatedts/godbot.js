@@ -9,24 +9,25 @@ const config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
 const commands = new Collections.Dictionary();
 const queue = [];
 var curstream;
+var outputVolume = config.defaultVolume;
 function playNext() {
     if (queue.length == 0) {
         client.voiceConnections.first().disconnect();
         return;
     }
-    playAudio(queue[0], client.voiceConnections.first());
+    playAudio(queue[0], client.voiceConnections.first(), client.guilds.first().defaultChannel);
     queue.shift();
 }
-function playAudio(str, connection) {
+function playAudio(str, connection, channel) {
     yt.getInfo(str, function (error, info) {
         if (error) {
-            connection.channel.guild.defaultChannel.send("wtf is this link");
+            channel.send("wtf is this link");
             return;
         }
-        connection.channel.guild.defaultChannel.send("Now playing **" + info.title + "**" + " by *" + info.author.name + "*");
-        curstream = yt(str, { filter: "audioonly" });
+        channel.send("Now playing **" + info.title + "**" + " by *" + info.author.name + "*");
+        curstream = connection.playStream(yt(str, { filter: "audioonly" }));
         curstream.addListener("end", playNext);
-        connection.playStream(curstream);
+        curstream.setVolume(outputVolume);
     });
 }
 function randomValue(min, max) {
@@ -102,9 +103,9 @@ client.on("ready", () => {
             return;
         }
         msg.member.voiceChannel.join().then(connection => {
-            if (queue.length == 0 && (curstream == null || !curstream.readable)) {
-                playAudio(str, connection);
-            }
+            client.guilds.first().member(client.user).setDeaf(true);
+            if (queue.length == 0 && (curstream == null || curstream.destroyed))
+                playAudio(str, connection, msg.channel);
             else {
                 yt.getInfo(str, function (error, info) {
                     if (error)
@@ -116,7 +117,7 @@ client.on("ready", () => {
         }).catch(console.error);
     });
     commands.setValue("stop", function (msg, str) {
-        curstream.emit("end");
+        curstream.end();
         queue.length = 0;
         msg.channel.send("Stopped playback");
     });
@@ -128,7 +129,17 @@ client.on("ready", () => {
         curstream.resume();
         msg.channel.send("Resumed playback");
     });
-    client.guilds.first().member(client.user).setDeaf(true);
+    commands.setValue("volume", function (msg, str) {
+        var num = parseInt(str);
+        if (num > 100)
+            num = 100;
+        if (num < 0)
+            num = 0;
+        outputVolume = num;
+        if (curstream != null)
+            if (!curstream.destroyed)
+                curstream.setVolume(outputVolume);
+    });
     console.log("god bot is present");
 });
 client.on("message", msg => {

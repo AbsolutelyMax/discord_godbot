@@ -2,33 +2,33 @@ import * as Discord from 'discord.js';
 const client = new Discord.Client();
 import { Readable } from "stream";
 import * as yt from 'ytdl-core';
-import * as destroy from 'destroy';
 import * as Collections from 'typescript-collections';
 import * as fs from 'fs';
 
 const config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
 const commands = new Collections.Dictionary<string, (msg:Discord.Message, str:string) => void>();
 const queue:string[] = [];
-var curstream:Readable;
+var curstream:Discord.StreamDispatcher;
+var outputVolume = config.defaultVolume as number;
 
 function playNext()
 {
   if (queue.length == 0) { client.voiceConnections.first().disconnect(); return; }
   playAudio(queue[0], client.voiceConnections.first());
+  playAudio(queue[0], client.voiceConnections.first(), client.guilds.first().defaultChannel);
   queue.shift();
 }
 
-function playAudio(str:string, connection:Discord.VoiceConnection)
+function playAudio(str:string, connection:Discord.VoiceConnection, channel:Discord.TextChannel | Discord.DMChannel | Discord.GroupDMChannel)
 {
   yt.getInfo(str, function(error, info)
   {
-    if (error)  { connection.channel.guild.defaultChannel.send("wtf is this link"); return }
-    connection.channel.guild.defaultChannel.send("Now playing **" + info.title + "**" + " by *" + info.author.name + "*");
-    curstream = yt(str, {filter: "audioonly"});
+    if (error)  { channel.send("wtf is this link"); return }
+    channel.send("Now playing **" + info.title + "**" + " by *" + info.author.name + "*");
+    curstream = connection.playStream(yt(str, {filter: "audioonly"}));
     curstream.addListener("end", playNext);
-    connection.playStream(curstream);
+    curstream.setVolume(outputVolume);
   });
-  
 }
 
 function randomValue (min:number, max:number) {
@@ -108,10 +108,10 @@ client.on("ready", () => {
     if (msg.member.voiceChannel == null) { msg.channel.send("get in a channel shithead"); return; }
     msg.member.voiceChannel.join().then(connection => 
     {
-      if (queue.length == 0 && (curstream == null || !curstream.readable))
-      {
-        playAudio(str, connection);
-      }else 
+      client.guilds.first().member(client.user).setDeaf(true);
+      if (queue.length == 0 && (curstream == null || curstream.destroyed))
+        playAudio(str, connection, msg.channel);
+      else 
       {
         yt.getInfo(str, function(error, info)
         {
@@ -125,7 +125,7 @@ client.on("ready", () => {
 
   commands.setValue("stop", function(msg, str) 
   {
-    curstream.emit("end");
+    curstream.end();
     queue.length = 0;
     msg.channel.send("Stopped playback");
   });
@@ -142,7 +142,14 @@ client.on("ready", () => {
     msg.channel.send("Resumed playback");
   });
 
-  client.guilds.first().member(client.user).setDeaf(true);
+  commands.setValue("volume", function(msg, str) 
+  {
+    var num = parseInt(str);
+    if (num > 100) num = 100;
+    if (num < 0) num = 0;
+    outputVolume = num;
+    if (curstream != null) if (!curstream.destroyed) curstream.setVolume(outputVolume);
+  });
 
   console.log("god bot is present");
 });
