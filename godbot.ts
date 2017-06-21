@@ -14,7 +14,6 @@ var outputVolume = config.defaultVolume as number;
 function playNext()
 {
   if (queue.length == 0) { client.voiceConnections.first().disconnect(); return; }
-  playAudio(queue[0], client.voiceConnections.first());
   playAudio(queue[0], client.voiceConnections.first(), client.guilds.first().defaultChannel);
   queue.shift();
 }
