@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Discord = require("discord.js");
 const client = new Discord.Client();
@@ -10,6 +18,14 @@ const commands = new Collections.Dictionary();
 const queue = [];
 var curstream;
 var outputVolume = config.defaultVolume;
+var curyoutubemessage;
+var Emojis = {
+    Number: "%E2%83%A3",
+    Ten: "%F0%9F%94%9F",
+    Stop: "%E2%97%BC",
+    Pause: "%E2%8F%B3",
+    Skip: "%E2%8F%A9"
+};
 function playNext() {
     if (queue.length == 0) {
         client.voiceConnections.first().disconnect();
@@ -24,10 +40,41 @@ function playAudio(str, connection, channel) {
             channel.send("wtf is this link");
             return;
         }
-        channel.send("Now playing **" + info.title + "**" + " by *" + info.author.name + "*");
-        curstream = connection.playStream(yt(str, { filter: "audioonly" }));
+        curstream = connection.playStream(yt(str, { filter: "audioonly", quality: "highest" }));
         curstream.addListener("end", playNext);
         curstream.setVolume(outputVolume);
+        channel.send("Now playing **" + info.title + "**" + " by *" + info.author.name + "*").then((message) => __awaiter(this, void 0, void 0, function* () {
+            curyoutubemessage = message;
+            //await message.react(Emojis.Pause);
+            yield message.react(Emojis.Stop);
+            yield message.react(Emojis.Skip);
+            const collector = message.createReactionCollector((reaction, user) => !user.bot, {});
+            collector.on("collect", reaction => {
+                switch (reaction.emoji.identifier) {
+                    /*
+                    case Emojis.Pause:
+                      {
+                        curstream.pause();
+                        break;
+                      }*/
+                    case Emojis.Stop:
+                        {
+                            curstream.end();
+                            queue.length = 0;
+                            reaction.users.filter(value => !value.bot).forEach(value => reaction.remove(value));
+                            reaction.message.channel.send("Stopped playback");
+                            break;
+                        }
+                    case Emojis.Skip:
+                        {
+                            curstream.end();
+                            message.channel.send("Skipped video");
+                            break;
+                        }
+                }
+            });
+            curstream.on("end", function () { collector.stop(); });
+        })).catch(console.error);
     });
 }
 function randomValue(min, max) {
@@ -73,7 +120,6 @@ function rollTheDice(dice) {
 }
 client.on("ready", () => {
     commands.setValue("africa", function (msg, str) {
-        console.log(str);
         msg.channel.send("https://www.youtube.com/watch?v=FTQbiNvZqaY");
     });
     /*
@@ -117,17 +163,26 @@ client.on("ready", () => {
         }).catch(console.error);
     });
     commands.setValue("stop", function (msg, str) {
-        curstream.end();
         queue.length = 0;
+        curstream.end();
         msg.channel.send("Stopped playback");
     });
-    commands.setValue("pause", function (msg, str) {
+    /* dont work idk why
+      commands.setValue("pause", function(msg, str)
+      {
         curstream.pause();
         msg.channel.send("Paused playback");
-    });
-    commands.setValue("resume", function (msg, str) {
+      });
+    
+      commands.setValue("resume", function(msg, str)
+      {
         curstream.resume();
         msg.channel.send("Resumed playback");
+      });
+    */
+    commands.setValue("skip", function (msg, str) {
+        curstream.end();
+        msg.channel.send("Skipped video");
     });
     commands.setValue("volume", function (msg, str) {
         var num = parseInt(str);
@@ -139,6 +194,24 @@ client.on("ready", () => {
         if (curstream != null)
             if (!curstream.destroyed)
                 curstream.setVolume(outputVolume);
+    });
+    commands.setValue("about", function (msg, str) { msg.channel.send("lol im god"); });
+    commands.setValue("gay", function (msg, str) {
+        msg.channel.send("How gay is **" + str + "**?").then((message) => __awaiter(this, void 0, void 0, function* () {
+            for (var i = 0; i < 10; i++)
+                yield message.react(i + "%E2%83%A3"); // fml utf 8 can suck my balls
+            message.react("%F0%9F%94%9F");
+            const collecter = message.createReactionCollector((reaction, user) => !user.bot);
+            collecter.on("collect", (reaction) => {
+                var num;
+                if (reaction.emoji.identifier.charAt(1) == 'F')
+                    num = 10;
+                else
+                    num = parseInt(reaction.emoji.identifier.charAt(0));
+                reaction.message.channel.send(str + " is " + (num == 0 ? 0 : num * 10) + " percent gay");
+                collecter.stop();
+            });
+        })).catch(console.error);
     });
     console.log("god bot is present");
 });
@@ -152,6 +225,15 @@ client.on("message", msg => {
         if (msg.content.startsWith(prefix + command))
             commands.values()[index](msg, msg.content.substring(prefix.length + command.length + 1).trim());
     });
+});
+client.on("messageReactionRemove", reaction => {
+    if (curstream == null || curstream.destroyed || curyoutubemessage == null)
+        return;
+    if (reaction.message != curyoutubemessage)
+        return;
+    if (reaction.emoji.identifier == Emojis.Pause) {
+        curstream.stream.resume();
+    }
 });
 client.login(config.token);
 //# sourceMappingURL=godbot.js.map
