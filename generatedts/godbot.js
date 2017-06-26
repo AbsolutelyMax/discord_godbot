@@ -19,12 +19,15 @@ const queue = [];
 var curstream;
 var outputVolume = config.defaultVolume;
 var curyoutubemessage;
+var curhelpmessage;
 var Emojis = {
     Number: "%E2%83%A3",
     Ten: "%F0%9F%94%9F",
     Stop: "%E2%97%BC",
     Pause: "%E2%8F%B3",
-    Skip: "%E2%8F%A9"
+    Skip: "%E2%8F%A9",
+    Game: "%F0%9F%8E%AE",
+    Waste: "%F0%9F%97%91"
 };
 function playNext() {
     if (queue.length == 0) {
@@ -67,6 +70,7 @@ function playAudio(str, connection, channel) {
                         }
                     case Emojis.Skip:
                         {
+                            reaction.users.filter(value => !value.bot).forEach(value => reaction.remove(value));
                             curstream.end();
                             message.channel.send("Skipped video");
                             break;
@@ -199,8 +203,8 @@ client.on("ready", () => {
     commands.setValue("gay", function (msg, str) {
         msg.channel.send("How gay is **" + str + "**?").then((message) => __awaiter(this, void 0, void 0, function* () {
             for (var i = 0; i < 10; i++)
-                yield message.react(i + "%E2%83%A3"); // fml utf 8 can suck my balls
-            message.react("%F0%9F%94%9F");
+                yield message.react(i + Emojis.Number); // fml utf 8 can suck my balls
+            message.react(Emojis.Ten);
             const collecter = message.createReactionCollector((reaction, user) => !user.bot);
             collecter.on("collect", (reaction) => {
                 var num;
@@ -212,6 +216,33 @@ client.on("ready", () => {
                 collecter.stop();
             });
         })).catch(console.error);
+    });
+    commands.setValue("help", function (msg, str) {
+        msg.channel.send("wat info u need").then((message) => __awaiter(this, void 0, void 0, function* () {
+            curhelpmessage = message;
+            yield message.react(Emojis.Game);
+            yield message.react(client.emojis.find(emoji => emoji.name === "lilpump"));
+            yield message.react(Emojis.Waste);
+            const collector = message.createReactionCollector((reaction, user) => !user.bot, {});
+            collector.on("collect", (reaction) => __awaiter(this, void 0, void 0, function* () {
+                if (reaction.emoji.name === "lilpump") {
+                    curhelpmessage = yield message.edit("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
+                }
+                switch (reaction.emoji.identifier) {
+                    case Emojis.Game:
+                        {
+                            curhelpmessage = yield message.edit("# Games\nwe got dice", {});
+                            break;
+                        }
+                    case Emojis.Waste:
+                        {
+                            collector.stop();
+                            curhelpmessage.delete();
+                            break;
+                        }
+                }
+            }));
+        }));
     });
     console.log("god bot is present");
 });

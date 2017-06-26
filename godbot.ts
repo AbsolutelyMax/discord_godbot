@@ -11,6 +11,7 @@ const queue:string[] = [];
 var curstream:Discord.StreamDispatcher;
 var outputVolume = config.defaultVolume as number;
 var curyoutubemessage:Discord.Message;
+var curhelpmessage:Discord.Message;
 
 var Emojis =
 {
@@ -18,7 +19,9 @@ var Emojis =
   Ten: "%F0%9F%94%9F",
   Stop: "%E2%97%BC",
   Pause: "%E2%8F%B3",
-  Skip: "%E2%8F%A9"
+  Skip: "%E2%8F%A9",
+  Game: "%F0%9F%8E%AE",
+  Waste: "%F0%9F%97%91"
 }
 
 function playNext()
@@ -63,6 +66,7 @@ function playAudio(str:string, connection:Discord.VoiceConnection, channel:Disco
             }
           case Emojis.Skip:
           {
+            reaction.users.filter(value => !value.bot).forEach(value => reaction.remove(value));
             curstream.end();
             message.channel.send("Skipped video");
             break;
@@ -105,7 +109,6 @@ function getEmojiFromString(emojiname:string)
   {
     if (emoji.name === emojiname) return "<:" + emoji.identifier + ">";
   });
-
   return "";
 }
 
@@ -201,13 +204,14 @@ client.on("ready", () => {
   });
 
   commands.setValue("about", function(msg, str) { msg.channel.send("lol im god"); });
+  
   commands.setValue("gay", function(msg, str)
   {
     msg.channel.send("How gay is **" + str + "**?").then(async (message:Discord.Message) => 
     {
       for(var i = 0; i < 10; i++)
-        await message.react(i + "%E2%83%A3") // fml utf 8 can suck my balls
-      message.react("%F0%9F%94%9F");
+        await message.react(i + Emojis.Number) // fml utf 8 can suck my balls
+      message.react(Emojis.Ten);
       const collecter = message.createReactionCollector((reaction, user:Discord.User) => !user.bot);
       collecter.on("collect", (reaction) => 
       {
@@ -219,6 +223,40 @@ client.on("ready", () => {
     }).catch(console.error);
   });
 
+  commands.setValue("help", function (msg, str) 
+  {
+    msg.channel.send("wat info u need").then(async (message:Discord.Message) => 
+    {
+      curhelpmessage = message;
+      await message.react(Emojis.Game);
+      await message.react(client.emojis.find(emoji => emoji.name === "lilpump"));
+      await message.react(Emojis.Waste);
+
+      const collector = message.createReactionCollector((reaction, user:Discord.User) => !user.bot, {});
+      collector.on("collect", async (reaction) => 
+      {
+        if (reaction.emoji.name === "lilpump")
+        {
+          curhelpmessage = await message.edit("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
+        }
+        switch(reaction.emoji.identifier)
+        {
+          case Emojis.Game:
+          {
+            curhelpmessage = await message.edit("# Games\nwe got dice", {});
+            break;
+          }
+
+          case Emojis.Waste:
+          {
+            collector.stop();
+            curhelpmessage.delete();
+            break;
+          }
+        }
+      });
+    });
+  });
   console.log("god bot is present");
 });
 
