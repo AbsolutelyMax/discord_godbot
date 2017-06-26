@@ -19,6 +19,7 @@ const queue = [];
 var curstream;
 var outputVolume = config.defaultVolume;
 var curyoutubemessage;
+var curyoutubemessagecollector;
 var curhelpmessage;
 var Emojis = {
     Number: "%E2%83%A3",
@@ -29,9 +30,55 @@ var Emojis = {
     Game: "%F0%9F%8E%AE",
     Waste: "%F0%9F%97%91"
 };
+function ytStop() {
+    queue.length = 0;
+    curstream.end();
+}
+function createOrEditYoutubeMessage(channel, info) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (curyoutubemessage) {
+            curyoutubemessage = yield curyoutubemessage.edit("Now playing **" + info.title + "**" + " by *" + info.author.name + "*");
+            yield curyoutubemessage.clearReactions();
+            yield curyoutubemessage.react(Emojis.Pause);
+            yield curyoutubemessage.react(Emojis.Stop);
+            yield curyoutubemessage.react(Emojis.Skip);
+        }
+        else
+            channel.send("Now playing **" + info.title + "**" + " by *" + info.author.name + "*").then((message) => __awaiter(this, void 0, void 0, function* () {
+                curyoutubemessage = message;
+                yield message.react(Emojis.Pause);
+                yield message.react(Emojis.Stop);
+                yield message.react(Emojis.Skip);
+                curyoutubemessagecollector = message.createReactionCollector((reaction, user) => !user.bot, {});
+                curyoutubemessagecollector.on("collect", reaction => {
+                    switch (reaction.emoji.identifier) {
+                        case Emojis.Pause:
+                            {
+                                curstream.pause();
+                                break;
+                            }
+                        case Emojis.Stop:
+                            {
+                                ytStop();
+                                reaction.users.filter(value => !value.bot).forEach(value => reaction.remove(value));
+                                break;
+                            }
+                        case Emojis.Skip:
+                            {
+                                curstream.end();
+                                reaction.users.filter(value => !value.bot).forEach(value => reaction.remove(value));
+                                break;
+                            }
+                    }
+                });
+            })).catch(console.error);
+    });
+}
 function playNext() {
     if (queue.length == 0) {
         client.voiceConnections.first().disconnect();
+        curyoutubemessagecollector.stop();
+        curyoutubemessage.delete();
         return;
     }
     playAudio(queue[0], client.voiceConnections.first(), client.guilds.first().defaultChannel);
@@ -46,39 +93,7 @@ function playAudio(str, connection, channel) {
         curstream = connection.playStream(yt(str, { filter: "audioonly", quality: "highest" }));
         curstream.addListener("end", playNext);
         curstream.setVolume(outputVolume);
-        channel.send("Now playing **" + info.title + "**" + " by *" + info.author.name + "*").then((message) => __awaiter(this, void 0, void 0, function* () {
-            curyoutubemessage = message;
-            //await message.react(Emojis.Pause);
-            yield message.react(Emojis.Stop);
-            yield message.react(Emojis.Skip);
-            const collector = message.createReactionCollector((reaction, user) => !user.bot, {});
-            collector.on("collect", reaction => {
-                switch (reaction.emoji.identifier) {
-                    /*
-                    case Emojis.Pause:
-                      {
-                        curstream.pause();
-                        break;
-                      }*/
-                    case Emojis.Stop:
-                        {
-                            curstream.end();
-                            queue.length = 0;
-                            reaction.users.filter(value => !value.bot).forEach(value => reaction.remove(value));
-                            reaction.message.channel.send("Stopped playback");
-                            break;
-                        }
-                    case Emojis.Skip:
-                        {
-                            reaction.users.filter(value => !value.bot).forEach(value => reaction.remove(value));
-                            curstream.end();
-                            message.channel.send("Skipped video");
-                            break;
-                        }
-                }
-            });
-            curstream.on("end", function () { collector.stop(); });
-        })).catch(console.error);
+        createOrEditYoutubeMessage(channel, info);
     });
 }
 function randomValue(min, max) {
@@ -167,26 +182,20 @@ client.on("ready", () => {
         }).catch(console.error);
     });
     commands.setValue("stop", function (msg, str) {
-        queue.length = 0;
-        curstream.end();
-        msg.channel.send("Stopped playback");
+        ytStop();
+        msg.delete();
     });
-    /* dont work idk why
-      commands.setValue("pause", function(msg, str)
-      {
+    commands.setValue("pause", function (msg, str) {
         curstream.pause();
-        msg.channel.send("Paused playback");
-      });
-    
-      commands.setValue("resume", function(msg, str)
-      {
+        msg.delete();
+    });
+    commands.setValue("resume", function (msg, str) {
         curstream.resume();
-        msg.channel.send("Resumed playback");
-      });
-    */
+        msg.delete();
+    });
     commands.setValue("skip", function (msg, str) {
         curstream.end();
-        msg.channel.send("Skipped video");
+        msg.delete();
     });
     commands.setValue("volume", function (msg, str) {
         var num = parseInt(str);
@@ -204,7 +213,7 @@ client.on("ready", () => {
         msg.channel.send("How gay is **" + str + "**?").then((message) => __awaiter(this, void 0, void 0, function* () {
             for (var i = 0; i < 10; i++)
                 yield message.react(i + Emojis.Number); // fml utf 8 can suck my balls
-            message.react(Emojis.Ten);
+            yield message.react(Emojis.Ten);
             const collecter = message.createReactionCollector((reaction, user) => !user.bot);
             collecter.on("collect", (reaction) => {
                 var num;
@@ -222,16 +231,20 @@ client.on("ready", () => {
             curhelpmessage = message;
             yield message.react(Emojis.Game);
             yield message.react(client.emojis.find(emoji => emoji.name === "lilpump"));
+            yield message.react(client.emojis.find(emoji => emoji.name === "yt"));
             yield message.react(Emojis.Waste);
             const collector = message.createReactionCollector((reaction, user) => !user.bot, {});
             collector.on("collect", (reaction) => __awaiter(this, void 0, void 0, function* () {
                 if (reaction.emoji.name === "lilpump") {
                     curhelpmessage = yield message.edit("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
                 }
+                else if (reaction.emoji.name === "yt") {
+                    curhelpmessage = yield message.edit("**play <youtubelink>** | play a youtube video\n**skip** | skip current video\n**stop** | stop current video");
+                }
                 switch (reaction.emoji.identifier) {
                     case Emojis.Game:
                         {
-                            curhelpmessage = yield message.edit("# Games\nwe got dice", {});
+                            curhelpmessage = yield message.edit("**dice** | roll the dice", {});
                             break;
                         }
                     case Emojis.Waste:
@@ -262,9 +275,8 @@ client.on("messageReactionRemove", reaction => {
         return;
     if (reaction.message != curyoutubemessage)
         return;
-    if (reaction.emoji.identifier == Emojis.Pause) {
-        curstream.stream.resume();
-    }
+    if (reaction.emoji.identifier == Emojis.Pause)
+        curstream.resume();
 });
 client.login(config.token);
 //# sourceMappingURL=godbot.js.map
