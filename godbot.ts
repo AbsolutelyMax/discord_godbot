@@ -302,6 +302,11 @@ client.on("ready", () => {
     msg.channel.send("Your trap name is: " + result);
   });
 
+  commands.setValue("fireworks", function(msg, str) {
+    let result = "fireworks.gif";
+    msg.channel.send("hooray!", {file: result});
+  });
+
   commands.setValue("createprofile", function(msg, str) {
     let result = createNewProfile(msg.author.id, msg.author.username);
     msg.channel.send(result);

@@ -162,6 +162,11 @@ function rollTheDice(dice) {
     }
     return final;
 }
+var trapNames = ["wett", "nigga", "thot", "yeet", "booty", "finnesse", "brip", "bool", "lean", "woke", "ass", "deadass", "traphouse", "naenae", "dookie", "shih", "wile", "twerk", "vines", "compilation", "hood", "loud", "weed", "bih", "babymomma", "homie", "codeine", "thotty", "sidenigga", "whip", "donk", "fucc", "trapqueen", "hotnigga", "2phones", "boolbrab", "beangron", "yallmineifiwileout", "nut", "vape", "nuttedallonherlips", "lovesosa", "fatnigga", "drank", "hennessy", "henny", "dab", "whip", "lilnei", "remyboys", "ballin", "desiigner", "nug", "benjamins", "blunted", "buggin", "flaggin", "bussin", "buckwild", "brackin", "king", "dawg", "ghetto", "holla", "flyyoungred", "wildin", "kicks", "minecraft", "rollup", "shawty", "slammin", "juice", "baddie", "hubby", "balla", "bangin", "blowin", "blockhead", "blunt", "bootylicious", "bowl", "busta", "crip", "crib", "doodoo", "stuntin", "fatty", "420", "frontin", "gassedup", "hoochie", "hotbox", "neckass", "ratchet", "squad", "onfleek", "worldstar", "hunnit", "gang", "savage", "brib", "nilp", "sauce", "masta", "niggit", "krunk", "yudfuk", "grobe", "cuck", "niggalips", "brib", "bruh", "yuh", "mud", "boy", "raunchy"];
+function getTrapName() {
+    var trapName = trapNames[randomValue(0, trapNames.length)] + trapNames[randomValue(0, trapNames.length)] + ' ' + trapNames[randomValue(0, trapNames.length)] + trapNames[randomValue(0, trapNames.length)];
+    return trapName;
+}
 function createNewProfile(userId, author) {
     let currentProfiles = profiles;
     let hasProfile = false;
@@ -283,6 +288,14 @@ client.on("ready", () => {
         let result = sum.toString();
         msg.channel.send(result);
     });
+    commands.setValue("trapname", function (msg, str) {
+        let result = getTrapName();
+        msg.channel.send("Your trap name is: " + result);
+    });
+    commands.setValue("fireworks", function (msg, str) {
+        let result = "fireworks.gif";
+        msg.channel.send("hooray!", { file: result });
+    });
     commands.setValue("createprofile", function (msg, str) {
         let result = createNewProfile(msg.author.id, msg.author.username);
         msg.channel.send(result);
@@ -345,8 +358,7 @@ client.on("ready", () => {
         })).catch(console.error);
     });
     commands.setValue("help", function (msg, str) {
-        msg.channel.send("", { embed: { title: "Help", description: "Select a reaction for more detailed info", color: 0x00FF00 } }).
-            then((message) => __awaiter(this, void 0, void 0, function* () {
+        msg.channel.send("wat info u need").then((message) => __awaiter(this, void 0, void 0, function* () {
             curhelpmessage = message;
             yield message.react(Emojis.Game);
             yield message.react(client.emojis.find(emoji => emoji.name === "lilpump"));
@@ -354,22 +366,25 @@ client.on("ready", () => {
             yield message.react(Emojis.Waste);
             const collector = message.createReactionCollector((reaction, user) => !user.bot, {});
             collector.on("collect", (reaction) => __awaiter(this, void 0, void 0, function* () {
-                if (reaction.emoji.identifier == Emojis.Waste) {
-                    collector.stop();
-                    curhelpmessage.delete();
-                }
-                const embed = new Discord.RichEmbed(message.embeds[0]);
-                embed.setDescription("");
                 if (reaction.emoji.name === "lilpump") {
-                    embed.setDescription("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
+                    curhelpmessage = yield message.edit("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
                 }
                 else if (reaction.emoji.name === "yt") {
-                    embed.setDescription("**play <youtubelink>** | play a youtube video\n**skip** | skip current video\n**stop** | stop current video");
+                    curhelpmessage = yield message.edit("**play <youtubelink>** | play a youtube video\n**skip** | skip current video\n**stop** | stop current video");
                 }
-                else if (reaction.emoji.identifier == Emojis.Game) {
-                    embed.setDescription("**dice** | roll the dice");
+                switch (reaction.emoji.identifier) {
+                    case Emojis.Game:
+                        {
+                            curhelpmessage = yield message.edit("**dice** | roll the dice", {});
+                            break;
+                        }
+                    case Emojis.Waste:
+                        {
+                            collector.stop();
+                            curhelpmessage.delete();
+                            break;
+                        }
                 }
-                curhelpmessage = yield message.edit("", { embed: embed });
             }));
         }));
     });
