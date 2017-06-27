@@ -17,19 +17,6 @@ var curyoutubemessage:Discord.Message;
 var curyoutubemessagecollector:Discord.ReactionCollector;
 var curhelpmessage:Discord.Message;
 
-type PlayerInfo = 
-{
-  id:string,
-  username:string,
-  motto?:string;
-};
-
-type PlayerProfile = 
-{
-  info:PlayerInfo,
-  xp:number;
-};
-
 var Emojis =
 {
   Number: "%E2%83%A3",
