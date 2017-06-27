@@ -185,6 +185,7 @@ function createNewProfile(userId:string, author:string) {
   for(var i = 0; i < currentProfiles.length; i++) {
     if(Object.keys(currentProfiles[i])[0] === userId) {
       hasProfile = true;
+      break;
     } else { hasProfile = false; }
   }
   if(hasProfile) {
@@ -211,6 +212,7 @@ function setMotto(newMotto:string, userId:string) {
   for(var i = 0; i < currentProfiles.length; i++) {
     if(Object.keys(currentProfiles[i])[0] === userId) {
       hasProfile = true;
+      break;
     } else { hasProfile = false; }
   }
   //console.log("current motto: " + currentProfiles[0]["" + userId + ""].motto);
@@ -238,6 +240,7 @@ function getProfile(userId:string, image:string) {
   for(var i = 0; i < currentProfiles.length; i++) {
     if(Object.keys(currentProfiles[i])[0] === userId) {
       hasProfile = true;
+      break;
     } else { hasProfile = false; }
   }
   if(hasProfile) {
@@ -261,11 +264,13 @@ function getProfile(userId:string, image:string) {
             .addField("Gender", currentProfiles[i]["" + userId + ""].gender, true)
             .addField("Server XP", currentProfiles[i]["" + userId + ""].xp, true);
           
+          hasProfile = false;
           return {embed};
+          
           } 
     }
   } else {
-    hasProfile = false;
+    //hasProfile = false;
     return "You do not have a profile. Create one with **>createProfile**";
   }
 }
