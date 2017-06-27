@@ -162,22 +162,96 @@ function rollTheDice(dice) {
     }
     return final;
 }
-function createNewProfile(userId) {
+function createNewProfile(userId, author) {
     let currentProfiles = profiles;
-    console.log(currentProfiles);
-    //if(currentProfiles.contains(userId)) {
-    //  return "You already have an profile, access it by typing **>profile**";
-    //} else {
-    var newUserObj = {
-        userId: {
-            "name": "",
-            "motto": ""
+    let hasProfile = false;
+    for (var i = 0; i < currentProfiles.length; i++) {
+        if (Object.keys(currentProfiles[i])[0] === userId) {
+            hasProfile = true;
         }
-    };
-    currentProfiles.profiles.push(newUserObj);
-    fs.writeFile('./profiles.json', JSON.stringify(newUserObj), 'utf-8');
-    return ("Profile created! Access it with **>profile**");
-    //}
+        else {
+            hasProfile = false;
+        }
+    }
+    if (hasProfile) {
+        return "You already have an profile, access it by typing **>profile**";
+    }
+    else {
+        var newUserObj = {
+            [userId]: {
+                "name": [author],
+                "gender": "m",
+                "motto": "No Motto",
+                "xp": "0"
+            }
+        };
+        currentProfiles.push(newUserObj); //undefined
+        fs.writeFile('./profiles.json', JSON.stringify(currentProfiles), 'utf-8');
+        hasProfile = false;
+        return ("Profile created! Learn about profiles with **>phelp**");
+    }
+}
+function setMotto(newMotto, userId) {
+    let currentProfiles = profiles;
+    let hasProfile = false;
+    for (var i = 0; i < currentProfiles.length; i++) {
+        if (Object.keys(currentProfiles[i])[0] === userId) {
+            hasProfile = true;
+        }
+        else {
+            hasProfile = false;
+        }
+    }
+    //console.log("current motto: " + currentProfiles[0]["" + userId + ""].motto);
+    if (hasProfile) {
+        for (var i = 0; i < currentProfiles.length; i++) {
+            //console.log(Object.keys(currentProfiles[i])[0] === userId);
+            if (Object.keys(currentProfiles[i])[0] === userId) {
+                currentProfiles[i]["" + userId + ""].motto = [newMotto];
+                fs.writeFile('./profiles.json', JSON.stringify(currentProfiles), 'utf-8');
+                console.log("motto set in func");
+                return "Motto created: " + newMotto;
+            }
+        }
+    }
+    else {
+        hasProfile = false;
+        return "You do not have a profile. Create one with **>createProfile**";
+    }
+}
+function getProfile(userId, image) {
+    let currentProfiles = profiles;
+    let hasProfile = false;
+    for (var i = 0; i < currentProfiles.length; i++) {
+        if (Object.keys(currentProfiles[i])[0] === userId) {
+            hasProfile = true;
+        }
+        else {
+            hasProfile = false;
+        }
+    }
+    if (hasProfile) {
+        for (var i = 0; i < currentProfiles.length; i++) {
+            //console.log(Object.keys(currentProfiles[i])[0] === userId);
+            if (Object.keys(currentProfiles[i])[0] === userId) {
+                const embed = new Discord.RichEmbed()
+                    .setTitle(currentProfiles[i]["" + userId + ""].name + "'s profile")
+                    .setAuthor(userId, image)
+                    .setColor(0x00AE86)
+                    .setDescription(currentProfiles[i]["" + userId + ""].motto)
+                    .setFooter("God has spoken", "http://i.imgur.com/yNz72fJ.jpg") //god image
+                    .setThumbnail(image)
+                    .setTimestamp()
+                    .addField("Name", currentProfiles[i]["" + userId + ""].name, true)
+                    .addField("Gender", currentProfiles[i]["" + userId + ""].gender, true)
+                    .addField("Server XP", currentProfiles[i]["" + userId + ""].xp, true);
+                return { embed };
+            }
+        }
+    }
+    else {
+        return "You do not have a profile. Create one with **>createProfile**";
+    }
 }
 client.on("ready", () => {
     commands.setValue("africa", function (msg, str) {
@@ -205,11 +279,17 @@ client.on("ready", () => {
         msg.channel.send(result);
     });
     commands.setValue("createProfile", function (msg, str) {
-        let result = createNewProfile(msg.author.id);
+        let result = createNewProfile(msg.author.id, msg.author.username);
+        msg.channel.send(result);
+    });
+    commands.setValue("setMotto", function (msg, str) {
+        let result = setMotto(str, msg.author.id);
         msg.channel.send(result);
     });
     commands.setValue("profile", function (msg, str) {
-        msg.channel.send("uH");
+        let gotProfile = getProfile(msg.author.id, msg.author.avatarURL);
+        console.log(gotProfile);
+        msg.channel.send(gotProfile);
     });
     commands.setValue("play", function (msg, str) {
         ytPlay(msg, str);
@@ -241,7 +321,7 @@ client.on("ready", () => {
             if (!curstream.destroyed)
                 curstream.setVolume(outputVolume);
     });
-    commands.setValue("about", function (msg, str) { msg.channel.send("lol im god"); });
+    commands.setValue("about", function (msg, str) { msg.channel.send("lol im god don't fuck wit me"); });
     commands.setValue("gay", function (msg, str) {
         msg.channel.send("How gay is **" + str + "**?").then((message) => __awaiter(this, void 0, void 0, function* () {
             for (var i = 0; i < 10; i++)
