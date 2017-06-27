@@ -10,12 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const Discord = require("discord.js");
 const client = new Discord.Client();
+const ytsearchimport = require("youtube-search");
 const yt = require("ytdl-core");
 const Collections = require("typescript-collections");
 const fs = require("fs");
 const config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
 const commands = new Collections.Dictionary();
 const queue = [];
+const ytsearchoptions = { maxResults: 5, key: config.youtubeKey };
 var curstream;
 var outputVolume = config.defaultVolume;
 var curyoutubemessage;
@@ -30,9 +32,31 @@ var Emojis = {
     Game: "%F0%9F%8E%AE",
     Waste: "%F0%9F%97%91"
 };
+function ytSearch(searchquery, cb) {
+    ytsearchimport(searchquery, ytsearchoptions, cb);
+}
 function ytStop() {
     queue.length = 0;
     curstream.end();
+}
+function ytPlay(msg, str) {
+    if (msg.member.voiceChannel == null) {
+        msg.channel.send("get in a channel shithead");
+        return;
+    }
+    msg.member.voiceChannel.join().then(connection => {
+        client.guilds.first().member(client.user).setDeaf(true);
+        if (queue.length == 0 && (curstream == null || curstream.destroyed))
+            playAudio(str, connection, msg.channel);
+        else {
+            yt.getInfo(str, function (error, info) {
+                if (error)
+                    msg.channel.send("lmao video please");
+                queue.push(str);
+                msg.channel.send("Queued **" + info.title + "** by *" + info.author.name + "*");
+            });
+        }
+    }).catch(console.error);
 }
 function createOrEditYoutubeMessage(channel, info) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -163,23 +187,7 @@ client.on("ready", () => {
         msg.channel.send(result);
     });
     commands.setValue("play", function (msg, str) {
-        if (msg.member.voiceChannel == null) {
-            msg.channel.send("get in a channel shithead");
-            return;
-        }
-        msg.member.voiceChannel.join().then(connection => {
-            client.guilds.first().member(client.user).setDeaf(true);
-            if (queue.length == 0 && (curstream == null || curstream.destroyed))
-                playAudio(str, connection, msg.channel);
-            else {
-                yt.getInfo(str, function (error, info) {
-                    if (error)
-                        msg.channel.send("lmao video please");
-                    queue.push(str);
-                    msg.channel.send("Queued **" + info.title + "** by *" + info.author.name + "*");
-                });
-            }
-        }).catch(console.error);
+        ytPlay(msg, str);
     });
     commands.setValue("stop", function (msg, str) {
         ytStop();
@@ -256,6 +264,31 @@ client.on("ready", () => {
                 }
             }));
         }));
+    });
+    commands.setValue("search", function (msg, str) {
+        ytSearch(str, (error, resultarray) => {
+            if (error)
+                console.error(error);
+            var cStr = "```";
+            var n = 0;
+            resultarray.forEach(result => {
+                cStr += (n + 1) + ": " + result.title;
+                if (n != resultarray.length - 1)
+                    cStr += "\n";
+                n++;
+            });
+            cStr += "```";
+            msg.channel.send(cStr).then((message) => __awaiter(this, void 0, void 0, function* () {
+                for (var i = 0; i < n; i++)
+                    yield message.react((i + 1) + Emojis.Number);
+                const collecter = message.createReactionCollector((reaction, user) => !user.bot, {});
+                collecter.on("collect", (reaction) => {
+                    ytPlay(msg, resultarray[parseInt(reaction.emoji.identifier.charAt(0)) - 1].link);
+                    collecter.stop();
+                    message.delete();
+                });
+            })).catch(console.error);
+        });
     });
     console.log("god bot is present");
 });

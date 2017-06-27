@@ -39,6 +39,26 @@ function ytStop()
   curstream.end();
 }
 
+function ytPlay(msg:Discord.Message, str:string)
+{
+  if (msg.member.voiceChannel == null) { msg.channel.send("get in a channel shithead"); return; }
+   msg.member.voiceChannel.join().then(connection => 
+   {
+    client.guilds.first().member(client.user).setDeaf(true);
+    if (queue.length == 0 && (curstream == null || curstream.destroyed))
+      playAudio(str, connection, msg.channel);
+    else 
+    {
+      yt.getInfo(str, function(error, info)
+      {
+        if (error) msg.channel.send("lmao video please");
+        queue.push(str);
+        msg.channel.send("Queued **" + info.title + "** by *" + info.author.name + "*");
+      });
+    }
+   }).catch(console.error);
+}
+
 async function createOrEditYoutubeMessage(channel:Discord.TextChannel | Discord.DMChannel | Discord.GroupDMChannel, info:yt.videoInfo)
 {
   if (curyoutubemessage)
@@ -175,22 +195,7 @@ client.on("ready", () => {
 
   commands.setValue("play", function(msg, str)
   {
-    if (msg.member.voiceChannel == null) { msg.channel.send("get in a channel shithead"); return; }
-    msg.member.voiceChannel.join().then(connection => 
-    {
-      client.guilds.first().member(client.user).setDeaf(true);
-      if (queue.length == 0 && (curstream == null || curstream.destroyed))
-        playAudio(str, connection, msg.channel);
-      else 
-      {
-        yt.getInfo(str, function(error, info)
-        {
-          if (error) msg.channel.send("lmao video please");
-          queue.push(str);
-          msg.channel.send("Queued **" + info.title + "** by *" + info.author.name + "*");
-        });
-      }
-    }).catch(console.error);
+    ytPlay(msg, str);
   });
 
   commands.setValue("stop", function(msg, str) 
@@ -284,6 +289,36 @@ client.on("ready", () => {
       });
     });
   });
+
+  commands.setValue("search", function(msg, str) 
+  {
+    ytSearch(str, (error, resultarray:ytsearchimport.YouTubeSearchResults[]) => 
+    {
+      if (error) console.error(error);
+      var cStr:string = "```";
+      var n:number = 0;
+      resultarray.forEach(result => 
+      {
+        cStr += (n + 1) + ": " + result.title;
+        if (n != resultarray.length - 1) cStr += "\n";
+        n++;
+      });
+      cStr += "```";
+      msg.channel.send(cStr).then(async (message:Discord.Message) => 
+      {
+        for (var i = 0; i < n; i++)
+          await message.react((i + 1) + Emojis.Number);
+        const collecter = message.createReactionCollector((reaction, user:Discord.User) => !user.bot, {});
+        collecter.on("collect", (reaction) => 
+        {
+          ytPlay(msg, resultarray[parseInt(reaction.emoji.identifier.charAt(0)) - 1].link);
+          collecter.stop();
+          message.delete();
+        });
+      }).catch(console.error);
+    });
+  });
+
   console.log("god bot is present");
 });
 
