@@ -1,6 +1,7 @@
 import * as Discord from 'discord.js';
 const client = new Discord.Client();
 import { Readable } from "stream";
+import * as ytsearchimport from 'youtube-search';
 import * as yt from 'ytdl-core';
 import * as Collections from 'typescript-collections';
 import * as fs from 'fs';
@@ -8,6 +9,7 @@ import * as fs from 'fs';
 const config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
 const commands = new Collections.Dictionary<string, (msg:Discord.Message, str:string) => void>();
 const queue:string[] = [];
+const ytsearchoptions:ytsearchimport.YouTubeSearchOptions = { maxResults: 5, key: (config.youtubeKey as string) };
 var curstream:Discord.StreamDispatcher;
 var outputVolume = config.defaultVolume as number;
 var curyoutubemessage:Discord.Message;
@@ -23,6 +25,12 @@ var Emojis =
   Skip: "%E2%8F%A9",
   Game: "%F0%9F%8E%AE",
   Waste: "%F0%9F%97%91"
+}
+
+function ytSearch(searchquery:string, 
+  cb:(err: Error, result?: ytsearchimport.YouTubeSearchResults[], pageInfo?: ytsearchimport.YouTubeSearchPageResults) => void)
+{
+  ytsearchimport(searchquery, ytsearchoptions, cb);
 }
 
 function ytStop()

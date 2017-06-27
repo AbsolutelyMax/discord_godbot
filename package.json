@@ -28,6 +28,7 @@
     "opusscript": "0.0.3",
     "typescript-collections": "^1.2.3",
     "uws": "^8.14.0",
+    "youtube-search": "^1.0.10",
     "ytdl-core": "^0.14.4"
   },
   "devDependencies": {
