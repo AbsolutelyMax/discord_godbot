@@ -17,6 +17,19 @@ var curyoutubemessage:Discord.Message;
 var curyoutubemessagecollector:Discord.ReactionCollector;
 var curhelpmessage:Discord.Message;
 
+type PlayerInfo = 
+{
+  id:string,
+  username:string,
+  motto?:string;
+};
+
+type PlayerProfile = 
+{
+  info:PlayerInfo,
+  xp:number;
+};
+
 var Emojis =
 {
   Number: "%E2%83%A3",
@@ -238,7 +251,7 @@ function getProfile(userId:string, image:string) {
 
             .setColor(0x00AE86)
             .setDescription(currentProfiles[i]["" + userId + ""].motto)
-            .setFooter("God has spoken", "http://i.imgur.com/yNz72fJ.jpg") //god image
+            .setFooter("God has spoken", client.user.avatarURL) //god image
             //.setImage(image) Set this to chosen image
             .setThumbnail(image)
             .setTimestamp()
@@ -285,12 +298,12 @@ client.on("ready", () => {
     msg.channel.send(result);
   });
 
-  commands.setValue("createProfile", function(msg, str) {
+  commands.setValue("createprofile", function(msg, str) {
     let result = createNewProfile(msg.author.id, msg.author.username);
     msg.channel.send(result);
   });
 
-  commands.setValue("setMotto", function(msg, str) {
+  commands.setValue("setmotto", function(msg, str) {
     let result = setMotto(str, msg.author.id);
     msg.channel.send(result);
   });
@@ -403,7 +416,7 @@ client.on("ready", () => {
     ytSearch(str, (error, resultarray:ytsearchimport.YouTubeSearchResults[]) => 
     {
       if (error) console.error(error);
-      var cStr:string = "```";
+      var cStr:string = "";
       var n:number = 0;
       resultarray.forEach(result => 
       {
@@ -411,8 +424,9 @@ client.on("ready", () => {
         if (n != resultarray.length - 1) cStr += "\n";
         n++;
       });
-      cStr += "```";
-      msg.channel.send(cStr).then(async (message:Discord.Message) => 
+      msg.channel.send("", {embed: {title: "Results", description: cStr, color: 0xFF0000, thumbnail: 
+      {url: "http://icons.iconarchive.com/icons/dakirby309/simply-styled/128/YouTube-icon.png", height: 64, width: 64}}})
+      .then(async (message:Discord.Message) => 
       {
         for (var i = 0; i < n; i++)
           await message.react((i + 1) + Emojis.Number);
@@ -437,7 +451,7 @@ client.on("message", msg => {
   console.log(msg.content);
   commands.keys().forEach(function(command, index) 
   {
-    if (msg.content.startsWith(prefix + command))
+    if (msg.content.startsWith((prefix + command).toLowerCase()))
       commands.values()[index](msg, msg.content.substring(prefix.length + command.length + 1).trim());
   });
 });

@@ -239,7 +239,7 @@ function getProfile(userId, image) {
                     .setAuthor(userId, image)
                     .setColor(0x00AE86)
                     .setDescription(currentProfiles[i]["" + userId + ""].motto)
-                    .setFooter("God has spoken", "http://i.imgur.com/yNz72fJ.jpg") //god image
+                    .setFooter("God has spoken", client.user.avatarURL) //god image
                     .setThumbnail(image)
                     .setTimestamp()
                     .addField("Name", currentProfiles[i]["" + userId + ""].name, true)
@@ -250,6 +250,7 @@ function getProfile(userId, image) {
         }
     }
     else {
+        hasProfile = false;
         return "You do not have a profile. Create one with **>createProfile**";
     }
 }
@@ -278,11 +279,11 @@ client.on("ready", () => {
         let result = sum.toString();
         msg.channel.send(result);
     });
-    commands.setValue("createProfile", function (msg, str) {
+    commands.setValue("createprofile", function (msg, str) {
         let result = createNewProfile(msg.author.id, msg.author.username);
         msg.channel.send(result);
     });
-    commands.setValue("setMotto", function (msg, str) {
+    commands.setValue("setmotto", function (msg, str) {
         let result = setMotto(str, msg.author.id);
         msg.channel.send(result);
     });
@@ -374,7 +375,7 @@ client.on("ready", () => {
         ytSearch(str, (error, resultarray) => {
             if (error)
                 console.error(error);
-            var cStr = ""; // = "```";
+            var cStr = "";
             var n = 0;
             resultarray.forEach(result => {
                 cStr += (n + 1) + ": " + result.title;
@@ -382,9 +383,8 @@ client.on("ready", () => {
                     cStr += "\n";
                 n++;
             });
-            //cStr += "```";
-            msg.channel.send("", { embed: { title: "Results", description: cStr, color: 0xFF0000, thumbnail: { url: "http://icons.iconarchive.com/icons/dakirby309/simply-styled/128/YouTube-icon.png", height: 64, width: 64 } } }).
-                then((message) => __awaiter(this, void 0, void 0, function* () {
+            msg.channel.send("", { embed: { title: "Results", description: cStr, color: 0xFF0000, thumbnail: { url: "http://icons.iconarchive.com/icons/dakirby309/simply-styled/128/YouTube-icon.png", height: 64, width: 64 } } })
+                .then((message) => __awaiter(this, void 0, void 0, function* () {
                 for (var i = 0; i < n; i++)
                     yield message.react((i + 1) + Emojis.Number);
                 const collecter = message.createReactionCollector((reaction, user) => !user.bot, {});
@@ -405,7 +405,7 @@ client.on("message", msg => {
     //message.author.id !== config.ownerID
     console.log(msg.content);
     commands.keys().forEach(function (command, index) {
-        if (msg.content.startsWith(prefix + command))
+        if (msg.content.startsWith((prefix + command).toLowerCase()))
             commands.values()[index](msg, msg.content.substring(prefix.length + command.length + 1).trim());
     });
 });
