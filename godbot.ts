@@ -28,6 +28,29 @@ var Emojis =
   Waste: "%F0%9F%97%91"
 }
 
+type PlayerInfo = 
+{
+  id:string,
+  username:string,
+  motto?:string;
+};
+
+type PlayerProfile = 
+{
+  info:PlayerInfo,
+  xp:number;
+};
+
+function removexp(prof:PlayerProfile)
+{
+  prof.xp -= 10;
+}
+
+function setMotto(prof:PlayerProfile, m:string)
+{
+  prof.info.motto = m;
+}
+
 function ytSearch(searchquery:string, 
   cb:(err: Error, result?: ytsearchimport.YouTubeSearchResults[], pageInfo?: ytsearchimport.YouTubeSearchPageResults) => void)
 {
@@ -325,7 +348,7 @@ client.on("ready", () => {
     ytSearch(str, (error, resultarray:ytsearchimport.YouTubeSearchResults[]) => 
     {
       if (error) console.error(error);
-      var cStr:string = "```";
+      var cStr:string = "";// = "```";
       var n:number = 0;
       resultarray.forEach(result => 
       {
@@ -333,8 +356,10 @@ client.on("ready", () => {
         if (n != resultarray.length - 1) cStr += "\n";
         n++;
       });
-      cStr += "```";
-      msg.channel.send(cStr).then(async (message:Discord.Message) => 
+      //cStr += "```";
+      msg.channel.send("", {embed: {title: "Results", description: cStr, color: 0xFF0000, thumbnail: 
+      {url: "http://icons.iconarchive.com/icons/dakirby309/simply-styled/128/YouTube-icon.png", height: 64, width: 64}}}).
+      then(async (message:Discord.Message) => 
       {
         for (var i = 0; i < n; i++)
           await message.react((i + 1) + Emojis.Number);

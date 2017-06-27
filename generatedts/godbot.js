@@ -294,7 +294,7 @@ client.on("ready", () => {
         ytSearch(str, (error, resultarray) => {
             if (error)
                 console.error(error);
-            var cStr = "```";
+            var cStr = ""; // = "```";
             var n = 0;
             resultarray.forEach(result => {
                 cStr += (n + 1) + ": " + result.title;
@@ -302,8 +302,9 @@ client.on("ready", () => {
                     cStr += "\n";
                 n++;
             });
-            cStr += "```";
-            msg.channel.send(cStr).then((message) => __awaiter(this, void 0, void 0, function* () {
+            //cStr += "```";
+            msg.channel.send("", { embed: { title: "Results", description: cStr, color: 0xFF0000, thumbnail: { url: "http://icons.iconarchive.com/icons/dakirby309/simply-styled/128/YouTube-icon.png", height: 64, width: 64 } } }).
+                then((message) => __awaiter(this, void 0, void 0, function* () {
                 for (var i = 0; i < n; i++)
                     yield message.react((i + 1) + Emojis.Number);
                 const collecter = message.createReactionCollector((reaction, user) => !user.bot, {});
