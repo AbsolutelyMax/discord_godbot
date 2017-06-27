@@ -345,7 +345,8 @@ client.on("ready", () => {
         })).catch(console.error);
     });
     commands.setValue("help", function (msg, str) {
-        msg.channel.send("wat info u need").then((message) => __awaiter(this, void 0, void 0, function* () {
+        msg.channel.send("", { embed: { title: "Help", description: "Select a reaction for more detailed info", color: 0x00FF00 } }).
+            then((message) => __awaiter(this, void 0, void 0, function* () {
             curhelpmessage = message;
             yield message.react(Emojis.Game);
             yield message.react(client.emojis.find(emoji => emoji.name === "lilpump"));
@@ -353,25 +354,22 @@ client.on("ready", () => {
             yield message.react(Emojis.Waste);
             const collector = message.createReactionCollector((reaction, user) => !user.bot, {});
             collector.on("collect", (reaction) => __awaiter(this, void 0, void 0, function* () {
+                if (reaction.emoji.identifier == Emojis.Waste) {
+                    collector.stop();
+                    curhelpmessage.delete();
+                }
+                const embed = new Discord.RichEmbed(message.embeds[0]);
+                embed.setDescription("");
                 if (reaction.emoji.name === "lilpump") {
-                    curhelpmessage = yield message.edit("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
+                    embed.setDescription("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
                 }
                 else if (reaction.emoji.name === "yt") {
-                    curhelpmessage = yield message.edit("**play <youtubelink>** | play a youtube video\n**skip** | skip current video\n**stop** | stop current video");
+                    embed.setDescription("**play <youtubelink>** | play a youtube video\n**skip** | skip current video\n**stop** | stop current video");
                 }
-                switch (reaction.emoji.identifier) {
-                    case Emojis.Game:
-                        {
-                            curhelpmessage = yield message.edit("**dice** | roll the dice", {});
-                            break;
-                        }
-                    case Emojis.Waste:
-                        {
-                            collector.stop();
-                            curhelpmessage.delete();
-                            break;
-                        }
+                else if (reaction.emoji.identifier == Emojis.Game) {
+                    embed.setDescription("**dice** | roll the dice");
                 }
+                curhelpmessage = yield message.edit("", { embed: embed });
             }));
         }));
     });

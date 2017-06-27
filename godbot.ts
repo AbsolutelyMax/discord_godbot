@@ -366,7 +366,8 @@ client.on("ready", () => {
 
   commands.setValue("help", function (msg, str) 
   {
-    msg.channel.send("wat info u need").then(async (message:Discord.Message) => 
+    msg.channel.send("", {embed: {title: "Help", description: "Select a reaction for more detailed info", color: 0x00FF00}}).
+      then(async (message:Discord.Message) => 
     {
       curhelpmessage = message;
       await message.react(Emojis.Game);
@@ -377,28 +378,26 @@ client.on("ready", () => {
       const collector = message.createReactionCollector((reaction, user:Discord.User) => !user.bot, {});
       collector.on("collect", async (reaction) => 
       {
+        if (reaction.emoji.identifier == Emojis.Waste)
+        {
+          collector.stop();
+          curhelpmessage.delete();
+        }
+
+        const embed = new Discord.RichEmbed(message.embeds[0]);
+        embed.setDescription("");
         if (reaction.emoji.name === "lilpump")
         {
-          curhelpmessage = await message.edit("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
+          embed.setDescription("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
         }else if (reaction.emoji.name === "yt")
         {
-          curhelpmessage = await message.edit("**play <youtubelink>** | play a youtube video\n**skip** | skip current video\n**stop** | stop current video");
-        }
-        switch(reaction.emoji.identifier)
+          embed.setDescription("**play <youtubelink>** | play a youtube video\n**skip** | skip current video\n**stop** | stop current video");
+        }else if (reaction.emoji.identifier == Emojis.Game)
         {
-          case Emojis.Game:
-          {
-            curhelpmessage = await message.edit("**dice** | roll the dice", {});
-            break;
-          }
-
-          case Emojis.Waste:
-          {
-            collector.stop();
-            curhelpmessage.delete();
-            break;
-          }
+          embed.setDescription("**dice** | roll the dice");
         }
+
+        curhelpmessage = await message.edit("", {embed: embed});
       });
     });
   });
