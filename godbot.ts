@@ -166,6 +166,13 @@ function rollTheDice(dice:number) {
     return final;
 }
 
+var trapNames = ["wett", "nigga", "thot", "yeet", "booty", "finnesse", "brip", "bool", "lean", "woke", "ass", "deadass", "traphouse", "naenae", "dookie", "shih", "wile", "twerk", "vines", "compilation", "hood", "loud", "weed", "bih", "babymomma", "homie", "codeine", "thotty", "sidenigga", "whip", "donk", "fucc", "trapqueen", "hotnigga", "2phones", "boolbrab", "beangron", "yallmineifiwileout", "nut", "vape", "nuttedallonherlips", "lovesosa", "fatnigga", "drank", "hennessy", "henny", "dab", "whip", "lilnei", "remyboys", "ballin", "desiigner", "nug",  "benjamins", "blunted", "buggin", "flaggin", "bussin", "buckwild", "brackin", "king", "dawg", "ghetto", "holla", "flyyoungred", "wildin", "kicks", "minecraft", "rollup", "shawty", "slammin", "juice", "baddie", "hubby", "balla", "bangin", "blowin", "blockhead", "blunt", "bootylicious", "bowl",  "busta", "crip", "crib", "doodoo", "stuntin", "fatty", "420", "frontin", "gassedup", "hoochie", "hotbox", "neckass", "ratchet", "squad", "onfleek", "worldstar", "hunnit", "gang", "savage", "brib", "nilp", "sauce", "masta", "niggit", "krunk", "yudfuk", "grobe", "cuck", "niggalips", "brib", "bruh", "yuh", "mud", "boy", "raunchy"];
+
+function getTrapName() {
+  var trapName = trapNames[randomValue(0, trapNames.length)] + trapNames[randomValue(0, trapNames.length)] + ' ' + trapNames[randomValue(0, trapNames.length)] + trapNames[randomValue(0, trapNames.length)];
+	return trapName;
+}
+
 function createNewProfile(userId:string, author:string) {
   let currentProfiles = profiles;
   let hasProfile = false;
@@ -290,6 +297,11 @@ client.on("ready", () => {
     msg.channel.send(result);
   });
 
+  commands.setValue("trapname", function(msg, str) {
+    let result = getTrapName();
+    msg.channel.send("Your trap name is: " + result);
+  });
+
   commands.setValue("createprofile", function(msg, str) {
     let result = createNewProfile(msg.author.id, msg.author.username);
     msg.channel.send(result);
@@ -304,7 +316,7 @@ client.on("ready", () => {
     let gotProfile = getProfile(msg.author.id, msg.author.avatarURL);
     console.log(gotProfile);
     msg.channel.send(gotProfile);
-  })
+  });
 
   commands.setValue("play", function(msg, str)
   {
@@ -366,8 +378,7 @@ client.on("ready", () => {
 
   commands.setValue("help", function (msg, str) 
   {
-    msg.channel.send("", {embed: {title: "Help", description: "Select a reaction for more detailed info", color: 0x00FF00}}).
-      then(async (message:Discord.Message) => 
+    msg.channel.send("wat info u need").then(async (message:Discord.Message) => 
     {
       curhelpmessage = message;
       await message.react(Emojis.Game);
@@ -378,26 +389,28 @@ client.on("ready", () => {
       const collector = message.createReactionCollector((reaction, user:Discord.User) => !user.bot, {});
       collector.on("collect", async (reaction) => 
       {
-        if (reaction.emoji.identifier == Emojis.Waste)
-        {
-          collector.stop();
-          curhelpmessage.delete();
-        }
-
-        const embed = new Discord.RichEmbed(message.embeds[0]);
-        embed.setDescription("");
         if (reaction.emoji.name === "lilpump")
         {
-          embed.setDescription("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
+          curhelpmessage = await message.edit("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
         }else if (reaction.emoji.name === "yt")
         {
-          embed.setDescription("**play <youtubelink>** | play a youtube video\n**skip** | skip current video\n**stop** | stop current video");
-        }else if (reaction.emoji.identifier == Emojis.Game)
-        {
-          embed.setDescription("**dice** | roll the dice");
+          curhelpmessage = await message.edit("**play <youtubelink>** | play a youtube video\n**skip** | skip current video\n**stop** | stop current video");
         }
+        switch(reaction.emoji.identifier)
+        {
+          case Emojis.Game:
+          {
+            curhelpmessage = await message.edit("**dice** | roll the dice", {});
+            break;
+          }
 
-        curhelpmessage = await message.edit("", {embed: embed});
+          case Emojis.Waste:
+          {
+            collector.stop();
+            curhelpmessage.delete();
+            break;
+          }
+        }
       });
     });
   });
