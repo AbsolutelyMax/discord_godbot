@@ -405,7 +405,7 @@ client.on("message", msg => {
     //message.author.id !== config.ownerID
     console.log(msg.content);
     commands.keys().forEach(function (command, index) {
-        if (msg.content.startsWith((prefix + command).toLowerCase()))
+        if (msg.content.toLowerCase().startsWith((prefix + command).toLowerCase()))
             commands.values()[index](msg, msg.content.substring(prefix.length + command.length + 1).trim());
     });
 });
