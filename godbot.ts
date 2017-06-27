@@ -6,7 +6,8 @@ import * as yt from 'ytdl-core';
 import * as Collections from 'typescript-collections';
 import * as fs from 'fs';
 
-const config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
+const config   = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
+const profiles = JSON.parse(fs.readFileSync("./profiles.json", "UTF-8"));
 const commands = new Collections.Dictionary<string, (msg:Discord.Message, str:string) => void>();
 const queue:string[] = [];
 const ytsearchoptions:ytsearchimport.YouTubeSearchOptions = { maxResults: 5, key: (config.youtubeKey as string) };
@@ -165,6 +166,25 @@ function rollTheDice(dice:number) {
     return final;
 }
 
+function createNewProfile(userId:string) {
+  let currentProfiles = profiles;
+  console.log(currentProfiles);
+  //if(currentProfiles.contains(userId)) {
+  //  return "You already have an profile, access it by typing **>profile**";
+  //} else {
+    var newUserObj = 
+    {
+      userId: {
+        "name": "",
+        "motto": ""
+      }
+    }
+    currentProfiles.profiles.push(newUserObj);
+    fs.writeFile('./profiles.json', JSON.stringify(newUserObj) , 'utf-8');
+    return("Profile created! Access it with **>profile**");
+  //}
+}
+
 client.on("ready", () => {
   commands.setValue("africa", function(msg, str) {
     msg.channel.send("https://www.youtube.com/watch?v=FTQbiNvZqaY");
@@ -192,6 +212,16 @@ client.on("ready", () => {
     let result = sum.toString();
     msg.channel.send(result);
   });
+
+  commands.setValue("createProfile", function(msg, str) {
+    let result = createNewProfile(msg.author.id);
+    msg.channel.send(result);
+  });
+
+  commands.setValue("profile", function(msg, str) {
+    
+    msg.channel.send("uH");
+  })
 
   commands.setValue("play", function(msg, str)
   {
