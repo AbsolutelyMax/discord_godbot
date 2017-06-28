@@ -110,7 +110,9 @@ function getProfile(userId, image) {
         return "You do not have a profile. Create one with **>createProfile**";
     }
 }
-function incrementXP(userId) {
+function getXpToLevel(level) { return 5 * (level ^ 2); }
+exports.getXpToLevel = getXpToLevel;
+function incrementXP(userId, amount) {
     let currentProfiles = global.profiles;
     let hasProfile = false;
     for (var i = 0; i < currentProfiles.length; i++) {
@@ -126,14 +128,18 @@ function incrementXP(userId) {
         for (var i = 0; i < currentProfiles.length; i++) {
             //console.log(Object.keys(currentProfiles[i])[0] === userId);
             if (Object.keys(currentProfiles[i])[0] === userId) {
-                let incVar = 1;
                 let currentProfilesXP = parseInt(currentProfiles[i]["" + userId + ""].xp);
-                currentProfilesXP += incVar;
-                incVar++;
+                currentProfilesXP += amount;
                 currentProfiles[i]["" + userId + ""].xp = currentProfilesXP.toString();
-                if (currentProfiles[i]["" + userId + ""].xp == 10) {
-                    currentProfiles[i]["" + userId + ""].level = 1;
+                if (currentProfiles[i]["" + userId + ""].xp >= getXpToLevel(currentProfiles[i]["" + userId + ""].level + 1)) {
+                    console.log("Level up!");
+                    let remainder = parseInt(currentProfiles[i]["" + userId + ""].xp) % (getXpToLevel(currentProfiles[i]["" + userId + ""].level + 1));
+                    let currentLevel = parseInt(currentProfiles[i]["" + userId + ""].level);
+                    currentLevel += 1;
+                    currentProfiles[i]["" + userId + ""].level = currentLevel.toString();
+                    currentProfiles[i]["" + userId + ""].xp = remainder;
                 }
+                fs.writeFile('./profiles.json', JSON.stringify(currentProfiles), 'utf-8');
                 hasProfile = false;
             }
         }
@@ -142,6 +148,7 @@ function incrementXP(userId) {
         console.log("err: userId not found in incrementXP");
     }
 }
+exports.incrementXP = incrementXP;
 function setupCommands() {
     godbot_1.commands.setValue("createprofile", function (msg, str) {
         let result = createNewProfile(msg.author.id, msg.author.username);
@@ -152,8 +159,8 @@ function setupCommands() {
         msg.channel.send(result);
     });
     godbot_1.commands.setValue("profile", function (msg, str) {
+        incrementXP(msg.author.id, 1);
         let gotProfile = getProfile(msg.author.id, msg.author.avatarURL);
-        incrementXP(msg.author.id);
         //console.log(gotProfile);
         msg.channel.send(gotProfile);
     });

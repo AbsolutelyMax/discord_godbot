@@ -100,8 +100,8 @@ function getProfile(userId:string, image:string) {
     return "You do not have a profile. Create one with **>createProfile**";
   }
 }
-
-function incrementXP(userId:string) {
+export function getXpToLevel(level:number) {return 5 * (level ^ 2)}
+export function incrementXP(userId:string, amount:number) {
   let currentProfiles = global.profiles;
   let hasProfile = false; 
   for(var i = 0; i < currentProfiles.length; i++) {
@@ -114,18 +114,20 @@ function incrementXP(userId:string) {
     for(var i = 0; i < currentProfiles.length; i++) {
         //console.log(Object.keys(currentProfiles[i])[0] === userId);
         if(Object.keys(currentProfiles[i])[0] === userId) {
-          let incVar:number = 1;
           let currentProfilesXP = parseInt(currentProfiles[i]["" + userId + ""].xp); 
-          currentProfilesXP += incVar;
-          incVar ++;
+          currentProfilesXP += amount;
           currentProfiles[i]["" + userId + ""].xp = currentProfilesXP.toString();
 
-          if(currentProfiles[i]["" + userId + ""].xp == 10) {
-            currentProfiles[i]["" + userId + ""].level = 1;
-            currentProfiles[i]["" + userId + ""].xp = 0;
-            //base_xp * (level_to_get ^ factor) (exponential or logarithmic?)
-          }
+          if(currentProfiles[i]["" + userId + ""].xp >= getXpToLevel(currentProfiles[i]["" + userId + ""].level+1)) {
+            console.log("Level up!");
+            let remainder = parseInt(currentProfiles[i]["" + userId + ""].xp) % (getXpToLevel(currentProfiles[i]["" + userId + ""].level+1))
+            let currentLevel = parseInt(currentProfiles[i]["" + userId + ""].level);
+            currentLevel += 1;
 
+            currentProfiles[i]["" + userId + ""].level = currentLevel.toString();
+            currentProfiles[i]["" + userId + ""].xp = remainder;
+          }
+          fs.writeFile('./profiles.json', JSON.stringify(currentProfiles) , 'utf-8');
           hasProfile = false;  
         } 
     }
@@ -147,8 +149,8 @@ export default function setupCommands()
   });
 
   commands.setValue("profile", function(msg, str) {
+    incrementXP(msg.author.id, 1);
     let gotProfile = getProfile(msg.author.id, msg.author.avatarURL);
-    incrementXP(msg.author.id);
     //console.log(gotProfile);
     msg.channel.send(gotProfile);
   });
