@@ -12,4 +12,8 @@ exports.Emojis = {
     Game: "%F0%9F%8E%AE",
     Waste: "%F0%9F%97%91"
 };
+function randomValue(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+exports.randomValue = randomValue;
 //# sourceMappingURL=common.js.map

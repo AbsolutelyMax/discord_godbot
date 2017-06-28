@@ -33,7 +33,8 @@ function createNewProfile(userId, author) {
                 "name": [author],
                 "gender": "m",
                 "motto": "No Motto",
-                "xp": "0"
+                "xp": "0",
+                "level": "0"
             }
         };
         currentProfiles.push(newUserObj); //undefined
@@ -95,9 +96,10 @@ function getProfile(userId, image) {
                     .setFooter("God has spoken", godbot_1.client.user.avatarURL) //god image
                     .setThumbnail(image)
                     .setTimestamp()
-                    .addField("Name", currentProfiles[i]["" + userId + ""].name, true)
-                    .addField("Gender", currentProfiles[i]["" + userId + ""].gender, true)
-                    .addField("Server XP", currentProfiles[i]["" + userId + ""].xp, true);
+                    .addField("**Name**", currentProfiles[i]["" + userId + ""].name, true)
+                    .addField("**Gender**", currentProfiles[i]["" + userId + ""].gender, true)
+                    .addField("**Server XP**", currentProfiles[i]["" + userId + ""].xp, true)
+                    .addField("**Level**", currentProfiles[i]["" + userId + ""].level, true);
                 hasProfile = false;
                 return { embed };
             }
@@ -106,6 +108,38 @@ function getProfile(userId, image) {
     else {
         //hasProfile = false;
         return "You do not have a profile. Create one with **>createProfile**";
+    }
+}
+function incrementXP(userId) {
+    let currentProfiles = global.profiles;
+    let hasProfile = false;
+    for (var i = 0; i < currentProfiles.length; i++) {
+        if (Object.keys(currentProfiles[i])[0] === userId) {
+            hasProfile = true;
+            break;
+        }
+        else {
+            hasProfile = false;
+        }
+    }
+    if (hasProfile) {
+        for (var i = 0; i < currentProfiles.length; i++) {
+            //console.log(Object.keys(currentProfiles[i])[0] === userId);
+            if (Object.keys(currentProfiles[i])[0] === userId) {
+                let incVar = 1;
+                let currentProfilesXP = parseInt(currentProfiles[i]["" + userId + ""].xp);
+                currentProfilesXP += incVar;
+                incVar++;
+                currentProfiles[i]["" + userId + ""].xp = currentProfilesXP.toString();
+                if (currentProfiles[i]["" + userId + ""].xp == 10) {
+                    currentProfiles[i]["" + userId + ""].level = 1;
+                }
+                hasProfile = false;
+            }
+        }
+    }
+    else {
+        console.log("err: userId not found in incrementXP");
     }
 }
 function setupCommands() {
@@ -119,7 +153,8 @@ function setupCommands() {
     });
     godbot_1.commands.setValue("profile", function (msg, str) {
         let gotProfile = getProfile(msg.author.id, msg.author.avatarURL);
-        console.log(gotProfile);
+        incrementXP(msg.author.id);
+        //console.log(gotProfile);
         msg.channel.send(gotProfile);
     });
     godbot_1.commands.setValue("gay", function (msg, str) {

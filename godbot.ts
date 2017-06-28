@@ -5,8 +5,8 @@ import * as Collections from 'typescript-collections';
 
 // scripts
 import ytexport from "./scripts/youtube";
-import rpexport from "./scripts/rp"
-import generatorexport from "./scripts/generator"
+import rpexport from "./scripts/rp";
+import generatorexport from "./scripts/generator";
 import gamesexport from "./scripts/games";
 import randexport from "./scripts/random";
 
