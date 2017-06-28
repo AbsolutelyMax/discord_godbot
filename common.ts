@@ -14,4 +14,10 @@ export var Emojis =
   Game: "%F0%9F%8E%AE",
   Waste: "%F0%9F%97%91"
 };
+
+export function randomValue (min:number, max:number) 
+{
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 export type CommandDictionary = Collections.Dictionary<string, (msg:Discord.Message, str:string) => void>;
