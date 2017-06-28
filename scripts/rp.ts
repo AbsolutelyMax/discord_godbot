@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import * as global from "../common"
-import { client, commands } from "../godbot"
+import { client, createCommand } from "../godbot"
 import * as fs from 'fs';
 
 function createNewProfile(userId:string, author:string) {
@@ -136,26 +136,27 @@ export function incrementXP(userId:string, amount:number) {
   }
 }
 
-export default function setupCommands()
+export default function setupCommands() : global.CommandCategory
 {
-  commands.setValue("createprofile", function(msg, str) {
+  createCommand("createprofile", "create a profile for the server", global.CommandType.RP, function(msg, str) {
     let result = createNewProfile(msg.author.id, msg.author.username);
     msg.channel.send(result);
   });
 
-  commands.setValue("setmotto", function(msg, str) {
+  createCommand("setmotto", "set your motto", global.CommandType.RP, function(msg, str) {
     let result = setMotto(str, msg.author.id);
     msg.channel.send(result);
   });
 
-  commands.setValue("profile", function(msg, str) {
-    incrementXP(msg.author.id, 1);
-    let gotProfile = getProfile(msg.author.id, msg.author.avatarURL);
+  createCommand("profile", "view your profile or someone elses", global.CommandType.RP, function(msg, str) {
+    var author:Discord.User = msg.mentions.members.size != 0 ? msg.mentions.members.first().user : msg.author;
+    incrementXP(author.id, 1);
+    let gotProfile = getProfile(author.id, author.avatarURL);
     //console.log(gotProfile);
     msg.channel.send(gotProfile);
   });
 
-  commands.setValue("gay", function(msg, str)
+  createCommand("gay", "assert how gay someone is", global.CommandType.RP, function(msg, str)
   {
     msg.channel.send("How gay is **" + str + "**?").then(async (message:Discord.Message) => 
     {
@@ -172,4 +173,6 @@ export default function setupCommands()
       });
     }).catch(console.error);
   });
+
+  return {type: global.CommandType.RP, emoji: "lilpump", name: "RP Commands"};
 }

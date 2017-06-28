@@ -12,6 +12,15 @@ exports.Emojis = {
     Game: "%F0%9F%8E%AE",
     Waste: "%F0%9F%97%91"
 };
+var CommandType;
+(function (CommandType) {
+    CommandType[CommandType["Game"] = 0] = "Game";
+    CommandType[CommandType["Generator"] = 1] = "Generator";
+    CommandType[CommandType["Rand"] = 2] = "Rand";
+    CommandType[CommandType["RP"] = 3] = "RP";
+    CommandType[CommandType["YT"] = 4] = "YT";
+    CommandType[CommandType["Stock"] = 5] = "Stock";
+})(CommandType = exports.CommandType || (exports.CommandType = {}));
 function randomValue(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }

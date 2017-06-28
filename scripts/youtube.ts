@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import * as global from "../common"
-import { client, commands } from "../godbot" 
+import { client, createCommand } from "../godbot" 
 import * as ytsearchimport from 'youtube-search';
 import * as yt from 'ytdl-core';
 
@@ -107,38 +107,38 @@ function playAudio(str:string, connection:Discord.VoiceConnection, channel:Disco
   });
 }
 
-export default function setupCommands()
+export default function setupCommands() : global.CommandCategory
 {
-  commands.setValue("play", function(msg, str)
+  createCommand("play", "play a youtube video", global.CommandType.YT, function(msg, str)
   {
     ytPlay(msg, str);
   });
 
-  commands.setValue("stop", function(msg, str) 
+  createCommand("stop", "stop current youtube video and queue", global.CommandType.YT, function(msg, str) 
   {
     ytStop();
     msg.delete();
   });
 
-  commands.setValue("pause", function(msg, str)
+  createCommand("pause", "pause current video", global.CommandType.YT, function(msg, str)
   {
     curstream.pause();
     msg.delete();
   });
 
-  commands.setValue("resume", function(msg, str)
+  createCommand("resume", "resume current video", global.CommandType.YT, function(msg, str)
   {
     curstream.resume();
     msg.delete();
   });
 
-  commands.setValue("skip", function (msg, str) 
+  createCommand("skip", "skip current video" ,global.CommandType.YT, function (msg, str) 
   {
     curstream.end();
     msg.delete();
   });
 
-  commands.setValue("volume", function(msg, str) 
+  createCommand("volume", "set output volume", global.CommandType.YT, function(msg, str) 
   {
     var num = parseInt(str);
     if (num > 100) num = 100;
@@ -147,7 +147,7 @@ export default function setupCommands()
     if (curstream != null) if (!curstream.destroyed) curstream.setVolume(outputVolume);
   });
 
-  commands.setValue("search", function(msg, str) 
+  createCommand("search", "search youtube for videos", global.CommandType.YT, function(msg, str) 
   {
     ytSearch(str, (error, resultarray:ytsearchimport.YouTubeSearchResults[]) => 
     {
@@ -176,6 +176,8 @@ export default function setupCommands()
       }).catch(console.error);
     });
   });
+
+  return {type: global.CommandType.YT, emoji: "yt", name: "YouTube"};
 }
 
 client.on("messageReactionRemove", reaction => 

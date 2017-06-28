@@ -11,10 +11,11 @@ function getTrapName() {
     return trapName;
 }
 function setupCommands() {
-    godbot_1.commands.setValue("trapname", function (msg, str) {
+    godbot_1.createCommand("trapname", "generate a trapname", global.CommandType.Generator, function (msg, str) {
         let result = getTrapName();
         msg.channel.send("Your trap name is: " + result);
     });
+    return { type: global.CommandType.Generator, emoji: "cashmeousside", name: "Max's Generators" };
 }
 exports.default = setupCommands;
 //# sourceMappingURL=generator.js.map

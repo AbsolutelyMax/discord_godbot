@@ -1,5 +1,4 @@
 import * as Discord from 'discord.js';
-import * as Collections from 'typescript-collections';
 import * as fs from 'fs';
 
 export const config   = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
@@ -15,9 +14,26 @@ export var Emojis =
   Waste: "%F0%9F%97%91"
 };
 
+export enum CommandType
+{
+  Game,
+  Generator,
+  Rand,
+  RP,
+  YT,
+  Stock
+}
+
+export type CommandCategory = 
+{
+  type:CommandType,
+  emoji:string,
+  name:string
+};
+
 export function randomValue (min:number, max:number) 
 {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-export type CommandDictionary = Collections.Dictionary<string, (msg:Discord.Message, str:string) => void>;
+export type CommandFunction = (msg:Discord.Message, str:string) => void;

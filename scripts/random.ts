@@ -1,17 +1,19 @@
 import * as Discord from "discord.js";
 import * as global from "../common";
 import * as rp from "./rp";
-import { client, commands } from "../godbot"
+import { client, createCommand } from "../godbot"
 
-export default function setupCommands()
+export default function setupCommands() : global.CommandCategory
 {
-  commands.setValue("africa", function(msg, str) {
+  createCommand("africa", "africa", global.CommandType.Rand, function(msg, str) {
     msg.channel.send("https://www.youtube.com/watch?v=FTQbiNvZqaY");
   });
 
-  commands.setValue("fireworks", function(msg, str) {
+  createCommand("fireworks", "make fireworks", global.CommandType.Rand,  function(msg, str) {
     let result = "fireworks.gif";
     rp.incrementXP(msg.author.id, 50);
     msg.channel.send("hooray!", {file: result});
   });
+
+  return {type: global.CommandType.Rand, emoji: "shred", name: "Random"};
 }

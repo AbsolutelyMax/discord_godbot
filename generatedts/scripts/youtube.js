@@ -107,26 +107,26 @@ function playAudio(str, connection, channel) {
     });
 }
 function setupCommands() {
-    godbot_1.commands.setValue("play", function (msg, str) {
+    godbot_1.createCommand("play", "play a youtube video", global.CommandType.YT, function (msg, str) {
         ytPlay(msg, str);
     });
-    godbot_1.commands.setValue("stop", function (msg, str) {
+    godbot_1.createCommand("stop", "stop current youtube video and queue", global.CommandType.YT, function (msg, str) {
         ytStop();
         msg.delete();
     });
-    godbot_1.commands.setValue("pause", function (msg, str) {
+    godbot_1.createCommand("pause", "pause current video", global.CommandType.YT, function (msg, str) {
         curstream.pause();
         msg.delete();
     });
-    godbot_1.commands.setValue("resume", function (msg, str) {
+    godbot_1.createCommand("resume", "resume current video", global.CommandType.YT, function (msg, str) {
         curstream.resume();
         msg.delete();
     });
-    godbot_1.commands.setValue("skip", function (msg, str) {
+    godbot_1.createCommand("skip", "skip current video", global.CommandType.YT, function (msg, str) {
         curstream.end();
         msg.delete();
     });
-    godbot_1.commands.setValue("volume", function (msg, str) {
+    godbot_1.createCommand("volume", "set output volume", global.CommandType.YT, function (msg, str) {
         var num = parseInt(str);
         if (num > 100)
             num = 100;
@@ -137,7 +137,7 @@ function setupCommands() {
             if (!curstream.destroyed)
                 curstream.setVolume(outputVolume);
     });
-    godbot_1.commands.setValue("search", function (msg, str) {
+    godbot_1.createCommand("search", "search youtube for videos", global.CommandType.YT, function (msg, str) {
         ytSearch(str, (error, resultarray) => {
             if (error)
                 console.error(error);
@@ -162,6 +162,7 @@ function setupCommands() {
             })).catch(console.error);
         });
     });
+    return { type: global.CommandType.YT, emoji: "yt", name: "YouTube" };
 }
 exports.default = setupCommands;
 godbot_1.client.on("messageReactionRemove", reaction => {

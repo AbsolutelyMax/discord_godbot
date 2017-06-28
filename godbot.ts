@@ -1,7 +1,6 @@
 import * as Discord from 'discord.js';
 export const client = new Discord.Client();
 import * as global from "./common";
-import * as Collections from 'typescript-collections';
 
 // scripts
 import ytexport from "./scripts/youtube";
@@ -10,56 +9,77 @@ import generatorexport from "./scripts/generator";
 import gamesexport from "./scripts/games";
 import randexport from "./scripts/random";
 
-export const commands = new Collections.Dictionary<string, (msg:Discord.Message, str:string) => void>();
+type Command = 
+{
+  name:string,
+  description:string,
+  type:global.CommandType,
+  cb:global.CommandFunction
+};
+
+const prefix:string = (global.config.prefix as string);
+const commands:Command[] = [];
+const categories:global.CommandCategory[] = [];
+export function createCommand(name:string, description:string, type:global.CommandType, cb:global.CommandFunction)
+{
+  commands.push({ name: name, description: description, type:type, cb: cb });
+}
+
 var curhelpmessage:Discord.Message;
 
 client.on("ready", () => {
-  commands.setValue("about", function(msg, str) { msg.channel.send("lol im god don't fuck wit me"); });
+  createCommand("about", "information about the bot", global.CommandType.Stock, function(msg, str) { msg.channel.send("lol im god don't fuck wit me"); });
 
-  commands.setValue("help", function (msg, str) 
+  createCommand("help", "information about commands", global.CommandType.Stock, function (msg, str) 
   {
-    msg.channel.send("wat info u need").then(async (message:Discord.Message) => 
+    msg.channel.send("", {embed: new Discord.RichEmbed().setAuthor("Help").setTitle("Select reactions for more detailed info").
+      setColor(0x00FF00)}).then(async (message:Discord.Message) => 
     {
       curhelpmessage = message;
+      /*
       await message.react(global.Emojis.Game);
       await message.react(client.emojis.find(emoji => emoji.name === "lilpump"));
-      await message.react(client.emojis.find(emoji => emoji.name === "yt"));
+      await message.react(client.emojis.find(emoji => emoji.name === "yt"));*/
+      categories.forEach(async c => 
+      {
+        if (!c.emoji.includes('%')) await message.react(client.emojis.find(emoji => emoji.name == c.emoji)); 
+          else await message.react(c.emoji);
+      });
       await message.react(global.Emojis.Waste);
 
       const collector = message.createReactionCollector((reaction, user:Discord.User) => !user.bot, {});
       collector.on("collect", async (reaction) => 
       {
-        if (reaction.emoji.name === "lilpump")
+        if (reaction.emoji.identifier == global.Emojis.Waste) 
+        { curhelpmessage.delete(); collector.stop(); }
+        const embed = new Discord.RichEmbed(message.embeds[0]);
+        var cate = categories.find(v => v.emoji == reaction.emoji.name || v.emoji == reaction.emoji.identifier);
+        if (cate)
         {
-          curhelpmessage = await message.edit("https://www.youtube.com/watch?v=T-J2PaQb6ZE");
-        }else if (reaction.emoji.name === "yt")
-        {
-          curhelpmessage = await message.edit("**play <youtubelink>** | play a youtube video\n**skip** | skip current video\n**stop** | stop current video");
-        }
-        switch(reaction.emoji.identifier)
-        {
-          case global.Emojis.Game:
+          embed.setTitle(cate.name);
+          embed.fields = [];
+          commands.filter(v => 
           {
-            curhelpmessage = await message.edit("**dice** | roll the dice", {});
-            break;
-          }
-
-          case global.Emojis.Waste:
+            if (cate)
+            {
+              return v.type == cate.type;
+            }
+          }).forEach(v => 
           {
-            collector.stop();
-            curhelpmessage.delete();
-            break;
-          }
-        }
+            embed.addField(prefix + v.name, v.description, true);
+          });
+        }else return;
+        curhelpmessage = await message.edit("", {embed: embed});
       });
     });
   });
   
-  ytexport();
-  rpexport();
-  generatorexport();
-  gamesexport();
-  randexport();
+  categories.push({type: global.CommandType.Stock, emoji:"lilpump", name: "Stock"});
+  categories.push(ytexport());
+  categories.push(rpexport());
+  categories.push(generatorexport());
+  categories.push(gamesexport());
+  categories.push(randexport());
 
   console.log("god bot is present");
 });
@@ -69,10 +89,10 @@ client.on("message", msg => {
   if (!msg.content.startsWith(prefix) || msg.author.bot) return;
   //message.author.id !== config.ownerID
   console.log(msg.content);
-  commands.keys().forEach(function(command, index) 
+  commands.forEach(function(command, index) 
   {
-    if (msg.content.toLowerCase().startsWith((prefix + command).toLowerCase()))
-      commands.values()[index](msg, msg.content.substring(prefix.length + command.length + 1).trim());
+    if (msg.content.toLowerCase().startsWith((prefix + command.name).toLowerCase()))
+      commands[index].cb(msg, msg.content.substring(prefix.length + command.name.length + 1).trim());
   });
 });
 

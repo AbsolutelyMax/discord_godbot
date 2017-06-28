@@ -150,21 +150,22 @@ function incrementXP(userId, amount) {
 }
 exports.incrementXP = incrementXP;
 function setupCommands() {
-    godbot_1.commands.setValue("createprofile", function (msg, str) {
+    godbot_1.createCommand("createprofile", "create a profile for the server", global.CommandType.RP, function (msg, str) {
         let result = createNewProfile(msg.author.id, msg.author.username);
         msg.channel.send(result);
     });
-    godbot_1.commands.setValue("setmotto", function (msg, str) {
+    godbot_1.createCommand("setmotto", "set your motto", global.CommandType.RP, function (msg, str) {
         let result = setMotto(str, msg.author.id);
         msg.channel.send(result);
     });
-    godbot_1.commands.setValue("profile", function (msg, str) {
-        incrementXP(msg.author.id, 1);
-        let gotProfile = getProfile(msg.author.id, msg.author.avatarURL);
+    godbot_1.createCommand("profile", "view your profile or someone elses", global.CommandType.RP, function (msg, str) {
+        var author = msg.mentions.members.size != 0 ? msg.mentions.members.first().user : msg.author;
+        incrementXP(author.id, 1);
+        let gotProfile = getProfile(author.id, author.avatarURL);
         //console.log(gotProfile);
         msg.channel.send(gotProfile);
     });
-    godbot_1.commands.setValue("gay", function (msg, str) {
+    godbot_1.createCommand("gay", "assert how gay someone is", global.CommandType.RP, function (msg, str) {
         msg.channel.send("How gay is **" + str + "**?").then((message) => __awaiter(this, void 0, void 0, function* () {
             for (var i = 0; i < 10; i++)
                 yield message.react(i + global.Emojis.Number); // fml utf 8 can suck my balls
@@ -181,6 +182,7 @@ function setupCommands() {
             });
         })).catch(console.error);
     });
+    return { type: global.CommandType.RP, emoji: "lilpump", name: "RP Commands" };
 }
 exports.default = setupCommands;
 //# sourceMappingURL=rp.js.map
