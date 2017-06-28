@@ -32,8 +32,8 @@ client.on("ready", () => {
 
   createCommand("help", "information about commands", global.CommandType.Stock, function (msg, str) 
   {
-    msg.channel.send("", {embed: new Discord.RichEmbed().setAuthor("Help").setTitle("Select reactions for more detailed info").
-      setColor(0x00FF00)}).then(async (message:Discord.Message) => 
+    msg.channel.send("", {embed: new Discord.RichEmbed().setAuthor("Help", client.user.displayAvatarURL)
+      .setTitle("Select reactions for more detailed info").setColor(0x00FF00)}).then(async (message:Discord.Message) => 
     {
       curhelpmessage = message;
       /*
@@ -52,11 +52,12 @@ client.on("ready", () => {
       {
         if (reaction.emoji.identifier == global.Emojis.Waste) 
         { curhelpmessage.delete(); collector.stop(); }
-        const embed = new Discord.RichEmbed(message.embeds[0]);
+        const embed = new Discord.RichEmbed().setTitle("Help").setColor(0x00FF00);
         var cate = categories.find(v => v.emoji == reaction.emoji.name || v.emoji == reaction.emoji.identifier);
         if (cate)
         {
           embed.setTitle(cate.name);
+          embed.addField('\u200B', '\u200B', false);
           embed.fields = [];
           commands.filter(v => 
           {
@@ -66,7 +67,7 @@ client.on("ready", () => {
             }
           }).forEach(v => 
           {
-            embed.addField(prefix + v.name, v.description, true);
+            embed.addField(prefix + v.name, v.description, false);
           });
         }else return;
         curhelpmessage = await message.edit("", {embed: embed});

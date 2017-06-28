@@ -28,8 +28,8 @@ var curhelpmessage;
 exports.client.on("ready", () => {
     createCommand("about", "information about the bot", global.CommandType.Stock, function (msg, str) { msg.channel.send("lol im god don't fuck wit me"); });
     createCommand("help", "information about commands", global.CommandType.Stock, function (msg, str) {
-        msg.channel.send("", { embed: new Discord.RichEmbed().setAuthor("Help").setTitle("Select reactions for more detailed info").
-                setColor(0x00FF00) }).then((message) => __awaiter(this, void 0, void 0, function* () {
+        msg.channel.send("", { embed: new Discord.RichEmbed().setAuthor("Help", exports.client.user.displayAvatarURL)
+                .setTitle("Select reactions for more detailed info").setColor(0x00FF00) }).then((message) => __awaiter(this, void 0, void 0, function* () {
             curhelpmessage = message;
             /*
             await message.react(global.Emojis.Game);
@@ -48,17 +48,18 @@ exports.client.on("ready", () => {
                     curhelpmessage.delete();
                     collector.stop();
                 }
-                const embed = new Discord.RichEmbed(message.embeds[0]);
+                const embed = new Discord.RichEmbed().setTitle("Help").setColor(0x00FF00);
                 var cate = categories.find(v => v.emoji == reaction.emoji.name || v.emoji == reaction.emoji.identifier);
                 if (cate) {
                     embed.setTitle(cate.name);
+                    embed.addField('\u200B', '\u200B', false);
                     embed.fields = [];
                     commands.filter(v => {
                         if (cate) {
                             return v.type == cate.type;
                         }
                     }).forEach(v => {
-                        embed.addField(prefix + v.name, v.description, true);
+                        embed.addField(prefix + v.name, v.description, false);
                     });
                 }
                 else
