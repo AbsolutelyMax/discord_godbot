@@ -150,39 +150,40 @@ function incrementXP(userId, amount) {
 }
 exports.incrementXP = incrementXP;
 function setupCommands() {
-    godbot_1.createCommand("createprofile", "create a profile for the server", global.CommandType.RP, function (msg, str) {
-        let result = createNewProfile(msg.author.id, msg.author.username);
-        msg.channel.send(result);
-    });
-    godbot_1.createCommand("setmotto", "set your motto", global.CommandType.RP, function (msg, str) {
-        let result = setMotto(str, msg.author.id);
-        msg.channel.send(result);
-    });
-    godbot_1.createCommand("profile", "view your profile or someone elses", global.CommandType.RP, function (msg, str) {
-        var author = msg.mentions.members.size != 0 ? msg.mentions.members.first().user : msg.author;
-        incrementXP(author.id, 1);
-        let gotProfile = getProfile(author.id, author.avatarURL);
-        //console.log(gotProfile);
-        msg.channel.send(gotProfile);
-    });
-    godbot_1.createCommand("gay", "assert how gay someone is", global.CommandType.RP, function (msg, str) {
-        msg.channel.send("How gay is **" + str + "**?").then((message) => __awaiter(this, void 0, void 0, function* () {
-            for (var i = 0; i < 10; i++)
-                yield message.react(i + global.Emojis.Number); // fml utf 8 can suck my balls
-            yield message.react(global.Emojis.Ten);
-            const collecter = message.createReactionCollector((reaction, user) => !user.bot);
-            collecter.on("collect", (reaction) => {
-                var num;
-                if (reaction.emoji.identifier.charAt(1) == 'F')
-                    num = 10;
-                else
-                    num = parseInt(reaction.emoji.identifier.charAt(0));
-                reaction.message.channel.send(str + " is " + (num == 0 ? 0 : num * 10) + " percent gay");
-                collecter.stop();
-            });
-        })).catch(console.error);
-    });
-    return { type: global.CommandType.RP, emoji: "lilpump", name: "RP Commands" };
+    godbot_1.pushCommands({ name: "RP Commands", emoji: "anime" }, [
+        godbot_1.createCommand("createprofile", "create a profile for the server", function (msg, str) {
+            let result = createNewProfile(msg.author.id, msg.author.username);
+            msg.channel.send(result);
+        }),
+        godbot_1.createCommand("setmotto", "set your motto", function (msg, str) {
+            let result = setMotto(str, msg.author.id);
+            msg.channel.send(result);
+        }),
+        godbot_1.createCommand("profile", "view your profile or someone elses", function (msg, str) {
+            var author = msg.mentions.members.size != 0 ? msg.mentions.members.first().user : msg.author;
+            incrementXP(author.id, 1);
+            let gotProfile = getProfile(author.id, author.avatarURL);
+            //console.log(gotProfile);
+            msg.channel.send(gotProfile);
+        }),
+        godbot_1.createCommand("gay", "assert how gay someone is", function (msg, str) {
+            msg.channel.send("How gay is **" + str + "**?").then((message) => __awaiter(this, void 0, void 0, function* () {
+                for (var i = 0; i < 10; i++)
+                    yield message.react(i + global.Emojis.Number); // fml utf 8 can suck my balls
+                yield message.react(global.Emojis.Ten);
+                const collecter = message.createReactionCollector((reaction, user) => !user.bot);
+                collecter.on("collect", (reaction) => {
+                    var num;
+                    if (reaction.emoji.identifier.charAt(1) == 'F')
+                        num = 10;
+                    else
+                        num = parseInt(reaction.emoji.identifier.charAt(0));
+                    reaction.message.channel.send(str + " is " + (num == 0 ? 0 : num * 10) + " percent gay");
+                    collecter.stop();
+                });
+            })).catch(console.error);
+        })
+    ]);
 }
 exports.default = setupCommands;
 //# sourceMappingURL=rp.js.map

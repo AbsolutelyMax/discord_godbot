@@ -1,5 +1,5 @@
 import * as global from "../common";
-import { client, createCommand } from "../godbot"
+import { client, createCommand, pushCommands } from "../godbot"
 
 function eightBall(arg:string) {
     var rNum = global.randomValue(1, 5);
@@ -30,26 +30,27 @@ function rollTheDice(dice:number) {
     return final;
 }
 
-export default function setupCommands() : global.CommandCategory 
+export default function setupCommands()
 {
-  createCommand("8ball", "8ball n shit", global.CommandType.Game, function(msg, str) {
-    let ans = "";
-    let postMsg = msg.content.slice(7);
-    ans = eightBall(postMsg);
-    msg.channel.send(ans);
-  });
+  pushCommands({name: "Games", emoji: global.Emojis.Game}, 
+  [
+    createCommand("8ball", "8ball n shit", function(msg, str) {
+      let ans = "";
+      let postMsg = msg.content.slice(7);
+      ans = eightBall(postMsg);
+      msg.channel.send(ans);
+    }),
 
-  createCommand("flip", "flip a coin", global.CommandType.Game, function(msg, str) {
-    var coin = (Math.floor(Math.random() * 2) == 0) ? 'heads' : 'tails';
-    let result = coin.toString();
-    msg.channel.send(result);
-  });
+    createCommand("flip", "flip a coin", function(msg, str) {
+      var coin = (Math.floor(Math.random() * 2) == 0) ? 'heads' : 'tails';
+      let result = coin.toString();
+      msg.channel.send(result);
+    }),
 
-  createCommand("roll", "roll som die", global.CommandType.Game, function(msg, str) {
-    let sum = rollTheDice(parseInt(str));
-    let result = sum.toString();
-    msg.channel.send(result);
-  });
-
-  return {type: global.CommandType.Game, emoji: global.Emojis.Game, name: "Games"};
+    createCommand("roll", "roll som die", function(msg, str) {
+      let sum = rollTheDice(parseInt(str));
+      let result = sum.toString();
+      msg.channel.send(result);
+    })
+  ]);
 }

@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import * as global from "../common"
-import { client, createCommand } from "../godbot" 
+import { client, createCommand, pushCommands } from "../godbot" 
 import * as ytsearchimport from 'youtube-search';
 import * as yt from 'ytdl-core';
 
@@ -107,77 +107,77 @@ function playAudio(str:string, connection:Discord.VoiceConnection, channel:Disco
   });
 }
 
-export default function setupCommands() : global.CommandCategory
+export default function setupCommands()
 {
-  createCommand("play", "play a youtube video", global.CommandType.YT, function(msg, str)
-  {
-    ytPlay(msg, str);
-  });
-
-  createCommand("stop", "stop current youtube video and queue", global.CommandType.YT, function(msg, str) 
-  {
-    ytStop();
-    msg.delete();
-  });
-
-  createCommand("pause", "pause current video", global.CommandType.YT, function(msg, str)
-  {
-    curstream.pause();
-    msg.delete();
-  });
-
-  createCommand("resume", "resume current video", global.CommandType.YT, function(msg, str)
-  {
-    curstream.resume();
-    msg.delete();
-  });
-
-  createCommand("skip", "skip current video" ,global.CommandType.YT, function (msg, str) 
-  {
-    curstream.end();
-    msg.delete();
-  });
-
-  createCommand("volume", "set output volume", global.CommandType.YT, function(msg, str) 
-  {
-    var num = parseInt(str);
-    if (num > 100) num = 100;
-    if (num < 0) num = 0;
-    outputVolume = num;
-    if (curstream != null) if (!curstream.destroyed) curstream.setVolume(outputVolume);
-  });
-
-  createCommand("search", "search youtube for videos", global.CommandType.YT, function(msg, str) 
-  {
-    ytSearch(str, (error, resultarray:ytsearchimport.YouTubeSearchResults[]) => 
+  pushCommands({name: "YouTube", emoji: "yt"}, [
+    createCommand("play", "play a youtube video", function(msg, str)
     {
-      if (error) console.error(error);
-      var cStr:string = "";
-      var n:number = 0;
-      resultarray.forEach(result => 
-      {
-        cStr += (n + 1) + ": " + result.title;
-        if (n != resultarray.length - 1) cStr += "\n";
-        n++;
-      });
-      msg.channel.send("", {embed: {title: "Results", description: cStr, color: 0xFF0000, thumbnail: 
-      {url: "http://icons.iconarchive.com/icons/dakirby309/simply-styled/128/YouTube-icon.png", height: 64, width: 64}}})
-      .then(async (message:Discord.Message) => 
-      {
-        for (var i = 0; i < n; i++)
-          await message.react((i + 1) + global.Emojis.Number);
-        const collecter = message.createReactionCollector((reaction, user:Discord.User) => !user.bot, {});
-        collecter.on("collect", (reaction) => 
-        {
-          ytPlay(msg, resultarray[parseInt(reaction.emoji.identifier.charAt(0)) - 1].link);
-          collecter.stop();
-          message.delete();
-        });
-      }).catch(console.error);
-    });
-  });
+      ytPlay(msg, str);
+    }),
 
-  return {type: global.CommandType.YT, emoji: "yt", name: "YouTube"};
+    createCommand("stop", "stop current youtube video and queue", function(msg, str) 
+    {
+      ytStop();
+      msg.delete();
+    }),
+
+    createCommand("pause", "pause current video", function(msg, str)
+    {
+      curstream.pause();
+      msg.delete();
+    }),
+
+    createCommand("resume", "resume current video", function(msg, str)
+    {
+      curstream.resume();
+      msg.delete();
+    }),
+
+    createCommand("skip", "skip current video",function (msg, str) 
+    {
+      curstream.end();
+      msg.delete();
+    }),
+
+    createCommand("volume", "set output volume", function(msg, str) 
+    {
+      var num = parseInt(str);
+      if (num > 100) num = 100;
+      if (num < 0) num = 0;
+      outputVolume = num;
+      if (curstream != null) if (!curstream.destroyed) curstream.setVolume(outputVolume);
+    }),
+
+    createCommand("search", "search youtube for videos", function(msg, str) 
+    {
+      ytSearch(str, (error, resultarray:ytsearchimport.YouTubeSearchResults[]) => 
+      {
+        if (error) console.error(error);
+        var cStr:string = "";
+        var n:number = 0;
+        resultarray.forEach(result => 
+        {
+          cStr += (n + 1) + ": " + result.title;
+          if (n != resultarray.length - 1) cStr += "\n";
+          n++;
+        });
+        msg.channel.send("", {embed: {title: "Results", description: cStr, color: 0xFF0000, thumbnail: 
+        {url: "http://icons.iconarchive.com/icons/dakirby309/simply-styled/128/YouTube-icon.png", height: 64, width: 64}}})
+        .then(async (message:Discord.Message) => 
+        {
+          for (var i = 0; i < n; i++)
+            await message.react((i + 1) + global.Emojis.Number);
+          const collecter = message.createReactionCollector((reaction, user:Discord.User) => !user.bot, {});
+          collecter.on("collect", (reaction) => 
+          {
+            ytPlay(msg, resultarray[parseInt(reaction.emoji.identifier.charAt(0)) - 1].link);
+            collecter.stop();
+            message.delete();
+          });
+        }).catch(console.error);
+      });
+    })
+  ]);
 }
 
 client.on("messageReactionRemove", reaction => 

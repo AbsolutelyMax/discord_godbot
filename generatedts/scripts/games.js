@@ -34,23 +34,24 @@ function rollTheDice(dice) {
     return final;
 }
 function setupCommands() {
-    godbot_1.createCommand("8ball", "8ball n shit", global.CommandType.Game, function (msg, str) {
-        let ans = "";
-        let postMsg = msg.content.slice(7);
-        ans = eightBall(postMsg);
-        msg.channel.send(ans);
-    });
-    godbot_1.createCommand("flip", "flip a coin", global.CommandType.Game, function (msg, str) {
-        var coin = (Math.floor(Math.random() * 2) == 0) ? 'heads' : 'tails';
-        let result = coin.toString();
-        msg.channel.send(result);
-    });
-    godbot_1.createCommand("roll", "roll som die", global.CommandType.Game, function (msg, str) {
-        let sum = rollTheDice(parseInt(str));
-        let result = sum.toString();
-        msg.channel.send(result);
-    });
-    return { type: global.CommandType.Game, emoji: global.Emojis.Game, name: "Games" };
+    godbot_1.pushCommands({ name: "Games", emoji: global.Emojis.Game }, [
+        godbot_1.createCommand("8ball", "8ball n shit", function (msg, str) {
+            let ans = "";
+            let postMsg = msg.content.slice(7);
+            ans = eightBall(postMsg);
+            msg.channel.send(ans);
+        }),
+        godbot_1.createCommand("flip", "flip a coin", function (msg, str) {
+            var coin = (Math.floor(Math.random() * 2) == 0) ? 'heads' : 'tails';
+            let result = coin.toString();
+            msg.channel.send(result);
+        }),
+        godbot_1.createCommand("roll", "roll som die", function (msg, str) {
+            let sum = rollTheDice(parseInt(str));
+            let result = sum.toString();
+            msg.channel.send(result);
+        })
+    ]);
 }
 exports.default = setupCommands;
 //# sourceMappingURL=games.js.map

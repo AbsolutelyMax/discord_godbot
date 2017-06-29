@@ -26,9 +26,8 @@ export enum CommandType
 
 export type CommandCategory = 
 {
-  type:CommandType,
-  emoji:string,
-  name:string
+  name:string,
+  emoji:string
 };
 
 export function randomValue (min:number, max:number) 

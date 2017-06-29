@@ -1,6 +1,6 @@
 import * as Discord from 'discord.js'
 import * as global from "../common"
-import { client, createCommand } from "../godbot"
+import { client, createCommand, pushCommands } from "../godbot"
 import * as fs from 'fs';
 
 function createNewProfile(userId:string, author:string) {
@@ -136,43 +136,43 @@ export function incrementXP(userId:string, amount:number) {
   }
 }
 
-export default function setupCommands() : global.CommandCategory
+export default function setupCommands()
 {
-  createCommand("createprofile", "create a profile for the server", global.CommandType.RP, function(msg, str) {
-    let result = createNewProfile(msg.author.id, msg.author.username);
-    msg.channel.send(result);
-  });
+  pushCommands({name: "RP Commands", emoji: "anime"}, [
+    createCommand("createprofile", "create a profile for the server", function(msg, str) {
+      let result = createNewProfile(msg.author.id, msg.author.username);
+      msg.channel.send(result);
+    }),
 
-  createCommand("setmotto", "set your motto", global.CommandType.RP, function(msg, str) {
-    let result = setMotto(str, msg.author.id);
-    msg.channel.send(result);
-  });
+    createCommand("setmotto", "set your motto", function(msg, str) {
+      let result = setMotto(str, msg.author.id);
+      msg.channel.send(result);
+    }),
 
-  createCommand("profile", "view your profile or someone elses", global.CommandType.RP, function(msg, str) {
-    var author:Discord.User = msg.mentions.members.size != 0 ? msg.mentions.members.first().user : msg.author;
-    incrementXP(author.id, 1);
-    let gotProfile = getProfile(author.id, author.avatarURL);
-    //console.log(gotProfile);
-    msg.channel.send(gotProfile);
-  });
+    createCommand("profile", "view your profile or someone elses", function(msg, str) {
+      var author:Discord.User = msg.mentions.members.size != 0 ? msg.mentions.members.first().user : msg.author;
+      incrementXP(author.id, 1);
+      let gotProfile = getProfile(author.id, author.avatarURL);
+      //console.log(gotProfile);
+      msg.channel.send(gotProfile);
+    }),
 
-  createCommand("gay", "assert how gay someone is", global.CommandType.RP, function(msg, str)
-  {
-    msg.channel.send("How gay is **" + str + "**?").then(async (message:Discord.Message) => 
+    createCommand("gay", "assert how gay someone is", function(msg, str)
     {
-      for(var i = 0; i < 10; i++)
-        await message.react(i + global.Emojis.Number) // fml utf 8 can suck my balls
-      await message.react(global.Emojis.Ten);
-      const collecter = message.createReactionCollector((reaction, user:Discord.User) => !user.bot);
-      collecter.on("collect", (reaction) => 
+      msg.channel.send("How gay is **" + str + "**?").then(async (message:Discord.Message) => 
       {
-        var num;
-        if (reaction.emoji.identifier.charAt(1) == 'F') num = 10; else num = parseInt(reaction.emoji.identifier.charAt(0));
-        reaction.message.channel.send(str + " is " + (num == 0 ? 0 : num * 10) + " percent gay");
-        collecter.stop();
-      });
-    }).catch(console.error);
-  });
-
-  return {type: global.CommandType.RP, emoji: "lilpump", name: "RP Commands"};
+        for(var i = 0; i < 10; i++)
+          await message.react(i + global.Emojis.Number) // fml utf 8 can suck my balls
+        await message.react(global.Emojis.Ten);
+        const collecter = message.createReactionCollector((reaction, user:Discord.User) => !user.bot);
+        collecter.on("collect", (reaction) => 
+        {
+          var num;
+          if (reaction.emoji.identifier.charAt(1) == 'F') num = 10; else num = parseInt(reaction.emoji.identifier.charAt(0));
+          reaction.message.channel.send(str + " is " + (num == 0 ? 0 : num * 10) + " percent gay");
+          collecter.stop();
+        });
+      }).catch(console.error);
+    })
+  ]);
 }

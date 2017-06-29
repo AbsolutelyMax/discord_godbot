@@ -107,62 +107,63 @@ function playAudio(str, connection, channel) {
     });
 }
 function setupCommands() {
-    godbot_1.createCommand("play", "play a youtube video", global.CommandType.YT, function (msg, str) {
-        ytPlay(msg, str);
-    });
-    godbot_1.createCommand("stop", "stop current youtube video and queue", global.CommandType.YT, function (msg, str) {
-        ytStop();
-        msg.delete();
-    });
-    godbot_1.createCommand("pause", "pause current video", global.CommandType.YT, function (msg, str) {
-        curstream.pause();
-        msg.delete();
-    });
-    godbot_1.createCommand("resume", "resume current video", global.CommandType.YT, function (msg, str) {
-        curstream.resume();
-        msg.delete();
-    });
-    godbot_1.createCommand("skip", "skip current video", global.CommandType.YT, function (msg, str) {
-        curstream.end();
-        msg.delete();
-    });
-    godbot_1.createCommand("volume", "set output volume", global.CommandType.YT, function (msg, str) {
-        var num = parseInt(str);
-        if (num > 100)
-            num = 100;
-        if (num < 0)
-            num = 0;
-        outputVolume = num;
-        if (curstream != null)
-            if (!curstream.destroyed)
-                curstream.setVolume(outputVolume);
-    });
-    godbot_1.createCommand("search", "search youtube for videos", global.CommandType.YT, function (msg, str) {
-        ytSearch(str, (error, resultarray) => {
-            if (error)
-                console.error(error);
-            var cStr = "";
-            var n = 0;
-            resultarray.forEach(result => {
-                cStr += (n + 1) + ": " + result.title;
-                if (n != resultarray.length - 1)
-                    cStr += "\n";
-                n++;
-            });
-            msg.channel.send("", { embed: { title: "Results", description: cStr, color: 0xFF0000, thumbnail: { url: "http://icons.iconarchive.com/icons/dakirby309/simply-styled/128/YouTube-icon.png", height: 64, width: 64 } } })
-                .then((message) => __awaiter(this, void 0, void 0, function* () {
-                for (var i = 0; i < n; i++)
-                    yield message.react((i + 1) + global.Emojis.Number);
-                const collecter = message.createReactionCollector((reaction, user) => !user.bot, {});
-                collecter.on("collect", (reaction) => {
-                    ytPlay(msg, resultarray[parseInt(reaction.emoji.identifier.charAt(0)) - 1].link);
-                    collecter.stop();
-                    message.delete();
+    godbot_1.pushCommands({ name: "YouTube", emoji: "yt" }, [
+        godbot_1.createCommand("play", "play a youtube video", function (msg, str) {
+            ytPlay(msg, str);
+        }),
+        godbot_1.createCommand("stop", "stop current youtube video and queue", function (msg, str) {
+            ytStop();
+            msg.delete();
+        }),
+        godbot_1.createCommand("pause", "pause current video", function (msg, str) {
+            curstream.pause();
+            msg.delete();
+        }),
+        godbot_1.createCommand("resume", "resume current video", function (msg, str) {
+            curstream.resume();
+            msg.delete();
+        }),
+        godbot_1.createCommand("skip", "skip current video", function (msg, str) {
+            curstream.end();
+            msg.delete();
+        }),
+        godbot_1.createCommand("volume", "set output volume", function (msg, str) {
+            var num = parseInt(str);
+            if (num > 100)
+                num = 100;
+            if (num < 0)
+                num = 0;
+            outputVolume = num;
+            if (curstream != null)
+                if (!curstream.destroyed)
+                    curstream.setVolume(outputVolume);
+        }),
+        godbot_1.createCommand("search", "search youtube for videos", function (msg, str) {
+            ytSearch(str, (error, resultarray) => {
+                if (error)
+                    console.error(error);
+                var cStr = "";
+                var n = 0;
+                resultarray.forEach(result => {
+                    cStr += (n + 1) + ": " + result.title;
+                    if (n != resultarray.length - 1)
+                        cStr += "\n";
+                    n++;
                 });
-            })).catch(console.error);
-        });
-    });
-    return { type: global.CommandType.YT, emoji: "yt", name: "YouTube" };
+                msg.channel.send("", { embed: { title: "Results", description: cStr, color: 0xFF0000, thumbnail: { url: "http://icons.iconarchive.com/icons/dakirby309/simply-styled/128/YouTube-icon.png", height: 64, width: 64 } } })
+                    .then((message) => __awaiter(this, void 0, void 0, function* () {
+                    for (var i = 0; i < n; i++)
+                        yield message.react((i + 1) + global.Emojis.Number);
+                    const collecter = message.createReactionCollector((reaction, user) => !user.bot, {});
+                    collecter.on("collect", (reaction) => {
+                        ytPlay(msg, resultarray[parseInt(reaction.emoji.identifier.charAt(0)) - 1].link);
+                        collecter.stop();
+                        message.delete();
+                    });
+                })).catch(console.error);
+            });
+        })
+    ]);
 }
 exports.default = setupCommands;
 godbot_1.client.on("messageReactionRemove", reaction => {
